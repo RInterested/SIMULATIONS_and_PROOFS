@@ -1,3 +1,5 @@
+### From this post: http://stats.stackexchange.com/q/232959/67822
+
 # Noiseless training data:
 Xtrain = c(-4,-3, -2, -1, 1)
 ytrain = sin(Xtrain)
