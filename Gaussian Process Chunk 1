@@ -1,0 +1,28 @@
+set.seed(0)
+n = 50 #No. test points
+Xtest = seq(-5, 5, length.out = n)       #Test points: 50 points between -5 and +5
+
+kernel = function(a,b, param){  # Defining a Gaussian kernel: exp{-1/2 abs(x_1 - x_2)^2}
+  # Leaving aside the abs value, (x_1 - x_2)^2 = a^2 + b^2 - 2 ab. 
+  # And making the matrices congruous:
+  sqdist = outer(a^2,b^2,FUN=`+`) - 2 * (a %*% t(b))
+  exp(-.5 * (1/param) * sqdist) 
+  # This is the kernel: if dist inf. the exp. becomes 1/e^inf =0, when dist=0, k =1
+}
+
+param = 0.1                                        
+K_ss = kernel(Xtest, Xtest, param)       #Kernel at test points
+
+  # Draw samples from the prior at our test points:
+
+L = chol(K_ss + 1e-15 * diag(n)) # Square root of the kernel values (the Cholesky)
+m = matrix(rnorm(n * 3), ncol = 3)
+f_prior = t(m) %*% L 
+# Generating multivariate normals through the Cholesky representing the kernels
+
+plot(Xtest,f_prior[1,], type="l", col='tan', ylim=c(-4,4),
+     main = "Three samples from thd GP Prior", xlab='',ylab='') 
+abline(h = 0)
+for(i in 2:3){
+lines(Xtest, f_prior[i,], type = 'l', col=i) # Plotting
+}
