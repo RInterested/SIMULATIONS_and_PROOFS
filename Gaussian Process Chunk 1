@@ -1,3 +1,5 @@
+### From this post: http://stats.stackexchange.com/q/232959/67822
+
 set.seed(0)
 n = 50 #No. test points
 Xtest = seq(-5, 5, length.out = n)       #Test points: 50 points between -5 and +5
