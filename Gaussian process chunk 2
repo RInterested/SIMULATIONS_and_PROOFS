@@ -1,0 +1,37 @@
+# Noiseless training data:
+Xtrain = c(-4,-3, -2, -1, 1)
+ytrain = sin(Xtrain)
+
+# Apply the kernel function to our training points:
+K = kernel(Xtrain, Xtrain, param)
+
+L = chol(K + 0.00005 * diag(length(Xtrain)))
+
+# Compute the mean at our test points:
+
+K_s = kernel(Xtrain, Xtest, param)
+Lk = solve(L) %*% K_s
+temp = solve(L) %*% ytrain
+mu = t(Lk) %*% temp
+
+# Compute the standard deviation:
+
+tempor = colSums(Lk^2)
+
+s2 = diag(K_ss) - tempor
+stdv = sqrt(s2)
+
+# Draw samples from the posterior at our test points:
+
+L = chol(K_ss + 1e-6 * diag(n) - (t(Lk) %*% Lk))
+m_prime = matrix(rnorm(n * 3), ncol = 3)
+sam = L %*% m_prime
+f_post = as.vector(mu) + sam
+
+plot(Xtest,f_post[,1], type="l", col='tan', ylim=c(-3,3),
+     main = "Three samples from thd GP Posterior", xlab='training points',ylab='') 
+abline(h = 0)
+points(Xtrain, ytrain, pch = 20, cex=2)
+for(i in 2:3){
+  lines(Xtest, f_post[,i], type = 'l', col=i) # Plotting
+}
