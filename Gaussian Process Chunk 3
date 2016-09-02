@@ -1,3 +1,5 @@
+### From this post: http://stats.stackexchange.com/q/232959/67822
+
 plot(Xtest,f_post[,1], type="l", col='tan', xlim= c(-5,2), ylim=c(-3,3),
      main = "Estimated mean and 2 SD's", xlab='',ylab='') 
 abline(h = 0)
