@@ -1,3 +1,5 @@
+### From this post: http://stats.stackexchange.com/q/232959/67822
+
 import numpy as np
 import matplotlib.pyplot as pl
 
