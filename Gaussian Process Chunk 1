@@ -23,7 +23,7 @@ f_prior = t(m) %*% L
 # Generating multivariate normals through the Cholesky representing the kernels
 
 plot(Xtest,f_prior[1,], type="l", col='tan', ylim=c(-4,4),
-     main = "Three samples from thd GP Prior", xlab='',ylab='') 
+     main = "Three samples from the GP Prior", xlab='',ylab='') 
 abline(h = 0)
 for(i in 2:3){
 lines(Xtest, f_prior[i,], type = 'l', col=i) # Plotting
