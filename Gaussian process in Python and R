@@ -1,0 +1,157 @@
+### From this post: http://stats.stackexchange.com/q/232959/67822
+###IN PYTHON:
+
+import numpy as np
+import matplotlib.pyplot as pl
+
+# Test data
+n = 50
+Xtest = np.linspace(-5, 5, n).reshape(-1,1)
+
+# Define the kernel function
+def kernel(a, b, param):
+    sqdist = np.sum(a**2,1).reshape(-1,1) + np.sum(b**2,1) - 2*np.dot(a, b.T)
+    return np.exp(-.5 * (1/param) * sqdist)
+
+param = 0.1
+K_ss = kernel(Xtest, Xtest, param)
+
+# Get cholesky decomposition (square root) of the
+# covariance matrix
+L = np.linalg.cholesky(K_ss + 1e-15*np.eye(n))
+# Sample 3 sets of standard normals for our test points,
+# multiply them by the square root of the covariance matrix
+f_prior = np.dot(L, np.random.normal(size=(n,3)))
+
+# Now let's plot the 3 sampled functions.
+pl.plot(Xtest, f_prior)
+pl.axis([-5, 5, -3, 3])
+pl.title('Three samples from the GP prior')
+pl.show()
+
+# Noiseless training data
+Xtrain = np.array([-4, -3, -2, -1, 1]).reshape(5,1)
+ytrain = np.sin(Xtrain)
+
+# Apply the kernel function to our training points
+K = kernel(Xtrain, Xtrain, param) # K.shape (5, 5) matrix of exp distances b/w train points
+
+L = np.linalg.cholesky(K + 0.00005 * np.eye(len(Xtrain))) # (5,5) Cholesky of cov matrix train points
+
+# Compute the mean at our test points.
+K_s = kernel(Xtrain, Xtest, param)  # Results in a K_s.shape (5,50) matrix exp dist train to test
+Lk = np.linalg.solve(L, K_s) # Results in a (5, 50) matrix corresponding to L^{-1} K_s
+# So we are solving Cholesky (var) of train * X = exponential distances from train to test
+# Below we do the same Cholesky (var) of train * W = y values of the train...
+# and then we multiply the X * W:
+mu = np.dot(Lk.T, np.linalg.solve(L, ytrain)).reshape((n,))
+
+# Compute the standard deviation so we can plot it
+s2 = np.diag(K_ss) - np.sum(Lk**2, axis=0)
+stdv = np.sqrt(s2)
+# Draw samples from the posterior at our test points.
+L = np.linalg.cholesky(K_ss + 1e-6*np.eye(n) - np.dot(Lk.T, Lk))
+f_post = mu.reshape(-1,1) + np.dot(L, np.random.normal(size=(n,3)))
+
+pl.plot(Xtrain, ytrain, 'bs', ms=8)
+pl.plot(Xtest, f_post)
+pl.gca().fill_between(Xtest.flat, mu-2*stdv, mu+2*stdv, color="#dddddd")
+pl.plot(Xtest, mu, 'r--', lw=2)
+pl.axis([-5, 5, -3, 3])
+pl.title('Three samples from the GP posterior')
+pl.show()
+
+###IN R:
+
+set.seed(0)
+n = 50 #No. test points
+Xtest = seq(-5, 5, length.out = n)   #Test points: 50 points between -5 and +5: -5, -4.79, -4.59,..., 4.59, 4.79, 5
+
+kernel = function(a,b, param){                                   # Defining a function the Gaussian process is exp{-1/2 abs(x_1 - x_2)^2}
+  #GP squared exponential kernel:
+  #Leaving aside the abs value, (x_1 - x_2)^2 = a^2 + b^2 - 2 ab. And making the matrices congruous:
+  sqdist = outer(a^2,b^2,FUN=`+`) - 2 * (a %*% t(b))
+  exp(-.5 * (1/param) * sqdist) # This is the kernel: when distance is inf. the exponential becomes 1/e^inf =0, when dist=0, k =1
+}
+  
+param = 0.1                                        
+K_ss = kernel(Xtest, Xtest, param)                       #Kernel at test points: all the points against each other.
+  
+  # Draw samples from the prior at our test points:
+  
+L = chol(K_ss + 1e-15 * diag(n)) # Square root of the kernel values (the Cholesky)
+m = matrix(rnorm(n * 3), ncol = 3)
+f_prior = t(m) %*% L # Generating multivariate normals through the Cholesky representing the kernels
+
+
+plot(Xtest,f_prior[1,], type="l", col='darkorange', ylim=c(-2.2,2.2), lwd = 2,
+     xlab ="", ylab ="")
+title(main="Three samples from the GP Prior", cex.main=0.85)
+abline(h = 0)
+colors=c(2, "darkred","blue")
+for(i in 2:3){
+lines(Xtest, f_prior[i,], type = 'l', 
+      col=colors[i], lwd=2) # Plotting
+}
+
+# Noiseless training data:
+Xtrain = c(-4,-3, -2, -1, 1)
+ytrain = sin(Xtrain)
+
+# Apply the kernel function to our training points:
+K = kernel(Xtrain, Xtrain, param)
+
+L = chol(K + 0.00005 * diag(length(Xtrain)))
+
+# Compute the mean at our test points:
+
+K_s = kernel(Xtrain, Xtest, param)
+Lk = solve(L) %*% K_s
+temp = solve(L) %*% ytrain
+mu = t(Lk) %*% temp
+
+# Compute the standard deviation:
+
+tempor = colSums(Lk^2)
+
+s2 = diag(K_ss) - tempor
+stdv = sqrt(s2)
+
+# Draw samples from the posterior at our test points:
+
+L = chol(K_ss + 1e-6 * diag(n) - (t(Lk) %*% Lk))
+m_prime = matrix(rnorm(n * 3), ncol = 3)
+sam = L %*% m_prime
+f_post = as.vector(mu) + sam
+
+
+
+colors=c(2, "darkred","blue")
+plot(Xtest,f_post[,1], type="l", lwd = 2, col='darkorange', 
+     ylim=c(-2.5,2.5),
+     xlab='',ylab='') 
+title(main="Three samples from the GP Posterior
+      Training points added",
+      cex.main=0.85)
+
+abline(h = 0)
+
+for(i in 2:3){
+  lines(Xtest, f_post[,i], type = 'l', lwd=2, col=colors[i]) # Plotting
+}
+points(Xtrain, ytrain, pch = 20, cex=2)
+
+plot(Xtest,mu, type="l", lwd=2, xlim= c(-5,2), ylim=c(-2.5,2.5),
+     xlab='',ylab='')
+title(main = "Estimated mean and 2 SD's
+      with training points", cex.main=0.85)
+
+abline(h = 0)
+
+
+polygon(c(Xtest,rev(Xtest)),c(mu-2*stdv,rev(mu+2*stdv)),
+        col =rgb(0,0,0.5,0.3) ,border = FALSE)
+
+lines(Xtest, mu + 2 * stdv, col="red",lty=2)
+lines(Xtest, mu - 2 * stdv, col="red",lty=2)
+points(Xtrain, ytrain, pch = 19, cex=.8)
