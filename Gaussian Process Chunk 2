@@ -31,7 +31,7 @@ sam = L %*% m_prime
 f_post = as.vector(mu) + sam
 
 plot(Xtest,f_post[,1], type="l", col='tan', ylim=c(-3,3),
-     main = "Three samples from thd GP Posterior", xlab='training points',ylab='') 
+     main = "Three samples from the GP Posterior", xlab='training points',ylab='') 
 abline(h = 0)
 points(Xtrain, ytrain, pch = 20, cex=2)
 for(i in 2:3){
