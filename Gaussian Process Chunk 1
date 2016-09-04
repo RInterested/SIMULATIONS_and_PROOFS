@@ -2,29 +2,31 @@
 
 set.seed(0)
 n = 50 #No. test points
-Xtest = seq(-5, 5, length.out = n)       #Test points: 50 points between -5 and +5
+Xtest = seq(-5, 5, length.out = n)   #Test points: 50 points between -5 and +5: -5, -4.79, -4.59,..., 4.59, 4.79, 5
 
-kernel = function(a,b, param){  # Defining a Gaussian kernel: exp{-1/2 abs(x_1 - x_2)^2}
-  # Leaving aside the abs value, (x_1 - x_2)^2 = a^2 + b^2 - 2 ab. 
-  # And making the matrices congruous:
+kernel = function(a,b, param){                                   # Defining a function the Gaussian process is exp{-1/2 abs(x_1 - x_2)^2}
+  #GP squared exponential kernel:
+  #Leaving aside the abs value, (x_1 - x_2)^2 = a^2 + b^2 - 2 ab. And making the matrices congruous:
   sqdist = outer(a^2,b^2,FUN=`+`) - 2 * (a %*% t(b))
-  exp(-.5 * (1/param) * sqdist) 
-  # This is the kernel: if dist inf. the exp. becomes 1/e^inf =0, when dist=0, k =1
+  exp(-.5 * (1/param) * sqdist) # This is the kernel: when distance is inf. the exponential becomes 1/e^inf =0, when dist=0, k =1
 }
-
+  
 param = 0.1                                        
-K_ss = kernel(Xtest, Xtest, param)       #Kernel at test points
-
+K_test = kernel(Xtest, Xtest, param)                       #Kernel at test points: all the points against each other.
+  
   # Draw samples from the prior at our test points:
-
-L = chol(K_ss + 1e-15 * diag(n)) # Square root of the kernel values (the Cholesky)
+  
+Ch_test = chol(K_test + 1e-15 * diag(n)) # Square root of the kernel values (the Cholesky)
 m = matrix(rnorm(n * 3), ncol = 3)
-f_prior = t(m) %*% L 
-# Generating multivariate normals through the Cholesky representing the kernels
+f_prior = t(m) %*% Ch_test # Generating multivariate normals through the Cholesky representing the kernels
 
-plot(Xtest,f_prior[1,], type="l", col='tan', ylim=c(-4,4),
-     main = "Three samples from the GP Prior", xlab='',ylab='') 
+
+plot(Xtest,f_prior[1,], type="l", col='darkorange', ylim=c(-2.2,2.2), lwd = 2,
+     xlab ="", ylab ="")
+title(main="Three samples from the GP Prior", cex.main=0.85)
 abline(h = 0)
+colors=c(2, "darkred","blue")
 for(i in 2:3){
-lines(Xtest, f_prior[i,], type = 'l', col=i) # Plotting
+lines(Xtest, f_prior[i,], type = 'l', 
+      col=colors[i], lwd=2) # Plotting
 }
