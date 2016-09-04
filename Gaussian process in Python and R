@@ -75,13 +75,13 @@ kernel = function(a,b, param){                                   # Defining a fu
 }
   
 param = 0.1                                        
-K_ss = kernel(Xtest, Xtest, param)                       #Kernel at test points: all the points against each other.
+K_test = kernel(Xtest, Xtest, param)                       #Kernel at test points: all the points against each other.
   
   # Draw samples from the prior at our test points:
   
-L = chol(K_ss + 1e-15 * diag(n)) # Square root of the kernel values (the Cholesky)
+Ch_test = chol(K_test + 1e-15 * diag(n)) # Square root of the kernel values (the Cholesky)
 m = matrix(rnorm(n * 3), ncol = 3)
-f_prior = t(m) %*% L # Generating multivariate normals through the Cholesky representing the kernels
+f_prior = t(m) %*% Ch_test # Generating multivariate normals through the Cholesky representing the kernels
 
 
 plot(Xtest,f_prior[1,], type="l", col='darkorange', ylim=c(-2.2,2.2), lwd = 2,
@@ -99,29 +99,31 @@ Xtrain = c(-4,-3, -2, -1, 1)
 ytrain = sin(Xtrain)
 
 # Apply the kernel function to our training points:
-K = kernel(Xtrain, Xtrain, param)
+K_train = kernel(Xtrain, Xtrain, param)
 
-L = chol(K + 0.00005 * diag(length(Xtrain)))
+Ch_train = chol(K_train + 0.00005 * diag(length(Xtrain)))
 
 # Compute the mean at our test points:
 
-K_s = kernel(Xtrain, Xtest, param)
-Lk = solve(L) %*% K_s
-temp = solve(L) %*% ytrain
-mu = t(Lk) %*% temp
+K_trte = kernel(Xtrain, Xtest, param)
+core = solve(Ch_train) %*% K_trte
+temp = solve(Ch_train) %*% ytrain
+mu = t(core) %*% temp
 
 # Compute the standard deviation:
 
-tempor = colSums(Lk^2)
+tempor = colSums(core^2)
 
-s2 = diag(K_ss) - tempor
+# Notice that all.equal(diag(t(Lk) %*% Lk), colSums(Lk^2)) TRUE
+
+s2 = diag(K_test) - tempor
 stdv = sqrt(s2)
 
 # Draw samples from the posterior at our test points:
 
-L = chol(K_ss + 1e-6 * diag(n) - (t(Lk) %*% Lk))
+Ch_post_gener = chol(K_test + 1e-6 * diag(n) - (t(core) %*% core))
 m_prime = matrix(rnorm(n * 3), ncol = 3)
-sam = L %*% m_prime
+sam = Ch_post_gener %*% m_prime
 f_post = as.vector(mu) + sam
 
 
@@ -141,10 +143,14 @@ for(i in 2:3){
 }
 points(Xtrain, ytrain, pch = 20, cex=2)
 
+
+
 plot(Xtest,mu, type="l", lwd=2, xlim= c(-5,2), ylim=c(-2.5,2.5),
      xlab='',ylab='')
 title(main = "Estimated mean and 2 SD's
-      with training points", cex.main=0.85)
+      with training points", cex.main=0.85,
+      sub= "true source of data (sin curve) in yellow",
+      cex.sub=0.7)
 
 abline(h = 0)
 
@@ -155,3 +161,5 @@ polygon(c(Xtest,rev(Xtest)),c(mu-2*stdv,rev(mu+2*stdv)),
 lines(Xtest, mu + 2 * stdv, col="red",lty=2)
 lines(Xtest, mu - 2 * stdv, col="red",lty=2)
 points(Xtrain, ytrain, pch = 19, cex=.8)
+
+lines(Xtest, sin(Xtest), col="yellow",lty=3, lwd=3)
