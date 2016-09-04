@@ -1,15 +1,20 @@
 ### From this post: http://stats.stackexchange.com/q/232959/67822
 
-plot(Xtest,f_post[,1], type="l", col='tan', xlim= c(-5,2), ylim=c(-3,3),
-     main = "Estimated mean and 2 SD's", xlab='',ylab='') 
+plot(Xtest,mu, type="l", lwd=2, xlim= c(-5,2), ylim=c(-2.5,2.5),
+     xlab='',ylab='')
+title(main = "Estimated mean and 2 SD's
+      with training points", cex.main=0.85,
+      sub= "true source of data (sin curve) in yellow",
+      cex.sub=0.7)
+
 abline(h = 0)
-points(Xtrain, ytrain, pch = 20, cex=2)
-for(i in 2:3){
-  lines(Xtest, f_post[,i], type = 'l', col=i) # Plotting
-}
-lines(Xtest, mu, lwd=2)
+
+
 polygon(c(Xtest,rev(Xtest)),c(mu-2*stdv,rev(mu+2*stdv)),
-        col =rgb(0,0,0.1,0.1) ,border = FALSE)
+        col =rgb(0,0,0.5,0.3) ,border = FALSE)
 
 lines(Xtest, mu + 2 * stdv, col="red",lty=2)
 lines(Xtest, mu - 2 * stdv, col="red",lty=2)
+points(Xtrain, ytrain, pch = 19, cex=.8)
+
+lines(Xtest, sin(Xtest), col="yellow",lty=3, lwd=3)
