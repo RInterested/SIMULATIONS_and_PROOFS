@@ -306,6 +306,9 @@ x = seq(0,3,0.01) * sqrt(2)
 norm = sqrt(pi) * pnorm(x, lower.tail = F)
 R = cbind(x, norm)
 
+comparison = cbind(kramp[,1], x, kramp[,2], norm, norm - kramp[,2])
+colnames(comparison) = c("t_value", "norm_quant_eq", "Kamp", "[R]", "Difference")
+
 difference = R[,2] - kramp[,2]
 
 (abs_diff = sum(abs(kramp[,2] - R[,2])))
