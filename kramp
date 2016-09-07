@@ -309,14 +309,14 @@ R = cbind(x, norm)
 difference = R[,2] - kramp[,2]
 
 (abs_diff = sum(abs(kramp[,2] - R[,2])))
-# [1] 0.000001699871
+# 0.000001200764
 
 (MAD = mean(abs(R[,2] - kramp[,2])))
-# [1] 0.000000005647411
+# [1] 0.000000003989249
 (MAE = mean(abs(difference)))
-# [1] 0.000000005647411
+# [1] 0.000000003989249
 
 MD = mean(abs(R[,2] - kramp[,2]))
 mean_R = mean(R[,2])
 (MRD = MD/mean_R)
-# [1] 0.0000000336984
+# [1] 0.00000002380406
