@@ -299,3 +299,24 @@ kramp = read.csv(header=F, text="0.00,0.886226920000
 2.98,0.000022199320
 2.99,0.000020849120
 3.00,0.000019577290")
+
+options(scipen=99)
+
+x = seq(0,3,0.01) * sqrt(2)
+norm = sqrt(pi) * pnorm(x, lower.tail = F)
+R = cbind(x, norm)
+
+difference = R[,2] - kramp[,2]
+
+(abs_diff = sum(abs(kramp[,2] - R[,2])))
+# [1] 0.000001699871
+
+(MAD = mean(abs(R[,2] - kramp[,2])))
+# [1] 0.000000005647411
+(MAE = mean(abs(difference)))
+# [1] 0.000000005647411
+
+MD = mean(abs(R[,2] - kramp[,2]))
+mean_R = mean(R[,2])
+(MRD = MD/mean_R)
+# [1] 0.0000000336984
