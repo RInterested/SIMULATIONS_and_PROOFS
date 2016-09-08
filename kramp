@@ -319,6 +319,17 @@ difference = R[,2] - kramp[,2]
 (MAE = mean(abs(difference)))
 #[1] 0.000000003989249
 
+Mistake_position = rep(0,301)
+for(j in 1:301){
+    for(i in 1:15){
+       if(abs(comparison[j,5]) * 10^i >= 1){
+         Mistake_position[j] = i
+         break
+         }
+      }
+}
+(largest_mistake_decimal_place = min(Mistake_position))
+
 MD = mean(abs(R[,2] - kramp[,2]))
 mean_R = mean(R[,2])
 (MRD = MD/mean_R)
