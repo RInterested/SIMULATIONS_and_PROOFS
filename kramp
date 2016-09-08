@@ -330,6 +330,11 @@ for(j in 1:301){
 }
 (largest_mistake_decimal_place = min(Mistake_position))
 
+
+(typical_mistake = median(Mistake_position))
+(complete_agreement = sum(comparison[,3] == comparison[,4]))
+(best_call = max(Mistake_position))
+
 (confirmation = min(ceiling(abs(log10(abs(comparison[,5]))))))
 
 MD = mean(abs(R[,2] - kramp[,2]))
