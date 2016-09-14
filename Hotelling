@@ -74,7 +74,17 @@ drug = read.table(sep="", header=F, text="38.4	73	18
                   37.8	68	13
                   ")
 
+drug = t(data.frame(t(sapply(drug,c))))
+placebo = t(data.frame(t(sapply(placebo,c))))
 colnames(drug) = c("fever", "pressure", "aches")
 colnames(placebo) = c("fever", "pressure", "aches")
 
+
 hotelling(drug,placebo)
+
+# compared to built-in packages:
+drug = drug[1:18,]
+
+
+library(DescTools)
+HotellingsT2Test(x = drug,y = placebo,mu = c(0,0,0))
