@@ -1,0 +1,44 @@
+### From https://www.r-bloggers.com/modelling-dependence-with-copulas-in-r/
+
+library(MASS)
+set.seed(100)
+
+m <- 3
+n <- 2000
+sigma <- matrix(c(1, 0.4, 0.2,
+                  0.4, 1, -0.8,
+                  0.2, -0.8, 1), 
+                nrow=3)
+z <- mvrnorm(n,mu=rep(0, m),Sigma=sigma,empirical=T)
+
+library(psych)
+cor(z,method='spearman')
+pairs.panels(z)
+
+u <- pnorm(z)
+pairs.panels(u)
+
+library(rgl)
+plot3d(u[,1],u[,2],u[,3],pch=20,col='navyblue')
+
+x1 <- qgamma(u[,1],shape=2,scale=1)
+x2 <- qbeta(u[,2],2,2)
+x3 <- qt(u[,3],df=5)
+plot3d(x1,x2,x3,pch=20,col='blue')
+
+df <- cbind(x1,x2,x3)
+pairs.panels(df)
+cor(df,meth='spearman')
+
+
+library(copula)
+set.seed(100)
+myCop <- normalCopula(param=c(0.4,0.2,-0.8), dim = 3, dispstr = "un")
+myMvd <- mvdc(copula=myCop, margins=c("gamma", "beta", "t"),
+              paramMargins=list(list(shape=2, scale=1),
+                                list(shape1=2, shape2=2), 
+                                list(df=5)) )
+
+Z2 <- rmvdc(myMvd, 2000)
+colnames(Z2) <- c("x1", "x2", "x3")
+pairs.panels(Z2)
