@@ -1,0 +1,142 @@
+CODE FOR THIS POST: http://stats.stackexchange.com/a/237203/67822
+
+### WITHOUT CONVOLUTION:
+
+Yr = 1:11 # Years zero to 10. x corresponds to 10, which is Yr[11].
+
+a = .055  
+# Arbritarily chosen slope of the function for p(mating at time = yr)   
+(m_t = ifelse((1 - a * Yr) > 0, 1 - a * Yr, 0)) 
+# Ifelse to reject potential negative prob. values
+
+# [1] 0.945 0.890 0.835 0.780 0.725 0.670 0.615 0.560 0.505 0.450 0.395
+
+b = .09   
+# Doing the same for the slope to calculate P(offspring | mate)
+(o_t = ifelse((1 - b * Yr) > 0, 1 - b * Yr, 0)) # Same trick to avoid neg values
+
+# [1] 0.91 0.82 0.73 0.64 0.55 0.46 0.37 0.28 0.19 0.10 0.01
+
+Prob_Off_k_and_mate_yr = function(k=1:11, yr= 0:10){ 
+  # Probability Offspring = k AND mating at Yr = yr
+  #k needs to be between yr and x
+  if(k > (length(Yr) - yr + 1)){stop('Number of spring selected is impossible')}else{
+    #Probability to mate at year Yr = yr:
+    P_mate_at_yr = ifelse(yr==0, m_t[1], prod(1 - (m_t)[1:yr]) * m_t[yr + 1])
+    #Probability of Offspring = k having mated at Yr = yr
+    S = seq(yr, length(Yr) - 1) 
+    # All the years remaning to choose from, including the mating year.
+    A = combn(S, k)             
+    # All possible combinations of k times from S
+    P_off_k_having_mated_yr = 0 # Starting an empty vector
+    for (i in 1:ncol(A)) {    
+      # For all subsets of k elements from the years "available"
+      P_off_k_having_mated_yr = P_off_k_having_mated_yr +
+        prod(o_t[A[,i] + 1], 1 - o_t[setdiff(S, A[,i]) + 1]) 
+      # Poisson binomial
+    }
+    Prob_Off_k_and_mate_yr = P_mate_at_yr * P_off_k_having_mated_yr 
+    return(Prob_Off_k_and_mate_yr)
+  }
+}
+
+
+# Trying the function for Offspring = 6 and mating at year 1:
+k = 6
+yr= 1
+Prob_Off_k_and_mate_yr(k,yr)
+
+# [1] 0.005674715
+
+# What about the probability of Offspring = 6 
+# regardless of the mating year (summation over years):
+Prob_Off_k = 0
+for(i in 0:(length(Yr) - k)){
+  Prob_Off_k =  Prob_Off_k + Prob_Off_k_and_mate_yr(k, i)
+}
+Prob_Off_k
+
+# [1] 0.2238927
+
+# Finally, the actual question in the OP: AT LEAST 3 Offspring (for example):
+k=3
+Prob_at_least_k = 0 # Starting empty vector
+for(i in 0:(length(Yr)- k)){     
+  # Loop over mating year, which can't go beyond len(Yr) - k
+  Prob_Off_k = 0                
+  # Probability of k and any max allowable k depending on the year of mating (i)
+  for(j in k:(length(Yr) - i)){ # Index for k's
+    Prob_Off_k =  Prob_Off_k + Prob_Off_k_and_mate_yr(j, i)
+  }
+  Prob_at_least_k = Prob_at_least_k + Prob_Off_k
+}
+Prob_at_least_k 
+
+# [1] 0.9682951
+
+### WITH CONVOLUTION:
+
+Yr = 1:11 # Years zero to 10. x corresponds to 10, which is Yr[11].
+
+a = .055  
+# Arbritarily chosen slope of the function for p(mating at time = yr)   
+(m_t = ifelse((1 - a * Yr) > 0, 1 - a * Yr, 0)) 
+# Ifelse to reject potential negative prob. values
+
+# [1] 0.945 0.890 0.835 0.780 0.725 0.670 0.615 0.560 0.505 0.450 0.395
+
+b = .09   
+# Doing the same for the slope to calculate P(offspring | mate)
+(o_t = ifelse((1 - b * Yr) > 0, 1 - b * Yr, 0)) # Same trick to avoid neg values
+
+# [1] 0.91 0.82 0.73 0.64 0.55 0.46 0.37 0.28 0.19 0.10 0.01
+
+Prob_Off_k_and_mate_yr_convolution = function(k=1:11, yr= 0:10){ 
+  # Probability Offspring = k AND mating at Yr = yr
+  #k needs to be between yr and x
+  if(k > (length(Yr) - yr + 1)){stop('Number of spring selected is impossible')}else{
+    #Probability to mate at year Yr = yr:
+    P_mate_at_yr = ifelse(yr==0, m_t[1], prod(1 - (m_t)[1:yr]) * m_t[yr + 1])
+    #Probability of Offspring = k having mated at Yr = yr
+    
+    z = 1
+    for (u in sort(o_t[yr+1:length(o_t)])) z <- convolve(z, c(u, 1 - u), type = "open")
+    Prob_Offspring = z *  P_mate_at_yr 
+    return(Prob_Offspring[k + 1])
+  }
+}
+
+
+# Trying the function for Offspring = 6 and mating at year 1:
+k = 6
+yr= 1
+Prob_Off_k_and_mate_yr_convolution(k,yr)
+
+
+# [1] 0.005674715
+
+# What about the probability of Offspring = 6 
+# regardless of the mating year (summation over years):
+Prob_Off_k = 0
+for(i in 0:(length(Yr) - k)){
+  Prob_Off_k =  Prob_Off_k + Prob_Off_k_and_mate_yr_convolution(k, i)
+}
+Prob_Off_k
+
+# [1] 0.2238927
+
+# Finally, the actual question in the OP: AT LEAST 3 Offspring (for example):
+k=3
+Prob_at_least_k = 0 # Starting empty vector
+for(i in 0:(length(Yr)- k)){     
+  # Loop over mating year, which can't go beyond len(Yr) - k
+  Prob_Off_k = 0                
+  # Probability of k and any max allowable k depending on the year of mating (i)
+  for(j in k:(length(Yr) - i)){ # Index for k's
+    Prob_Off_k =  Prob_Off_k + Prob_Off_k_and_mate_yr_convolution(j, i)
+  }
+  Prob_at_least_k = Prob_at_least_k + Prob_Off_k
+}
+Prob_at_least_k 
+
+# [1] 0.9682951
