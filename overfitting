@@ -1,0 +1,55 @@
+## Code for this answer: http://stats.stackexchange.com/a/241662/67822
+
+fit1 = lm(mpg ~ wt,mtcars)
+fit2 = lm(mpg ~ poly(wt,3),mtcars)
+fit3 = lm(mpg ~ poly(wt,10), mtcars)
+
+wt = sort(mtcars$wt)
+predicted2 = as.vector(predict(fit2, newdata=data.frame(wt)))
+predicted3 = as.vector(predict(fit3, newdata=data.frame(wt)))
+
+plot(mtcars$wt, mtcars$mpg)
+abline(fit1)
+lines(wt,predicted2)
+lines(wt,predicted3)
+summary(fit1)
+summary(fit2)
+summary(fit3)
+
+(RSS1 = sum(residuals(fit1)^2))
+(RSS2 = sum(residuals(fit2)^2))
+(RSS3 = sum(residuals(fit3)^2))
+
+sqrt(sum(residuals(fit2)^2)/28)
+sqrt(sum(residuals(fit1)^2)/30)
+
+plot(NULL, xlim=c(0,10),ylim=c(140,280), 
+     main="SSR versus polynomial degree",
+     cex.main=.8,
+     ylab="SSR",
+     xlab="polynomial degree")
+rss = 0
+for(i in 1:10){
+  fit = lm(mpg ~ poly(wt,i), mtcars)
+  predicted = as.vector(predict(fit, newdata=data.frame(wt)))
+  rss[i] = sum(residuals(fit)^2)
+  points(i, rss[i], pch=20, cex=1, 
+         bg=NULL, col=rgb(0.2,0,0.8,.8))
+}
+lines(1:10,rss, col="gray", lwd=2)
+points(1:10, rss, pch=20, cex=1, 
+       bg=NULL, col=rgb(0.2,0,0.8,.8))
+
+plot(mtcars$wt, mtcars$mpg,
+     main="Polynomial models",
+     cex.main=.9, cex.lab=.8,
+     ylab="Miles per gallon",
+     xlab="Vehicle weight",
+     pch=20, cex=1, 
+     bg=NULL, col="gray50")
+
+for(i in 1:15){
+  fit = lm(mpg ~ poly(wt,i), mtcars)
+  predicted = as.vector(predict(fit, newdata=data.frame(wt)))
+  lines(wt,predicted, col=i)
+}
