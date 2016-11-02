@@ -1,0 +1,49 @@
+# Response to this question: http://stats.stackexchange.com/q/243598/67822
+
+library(vcd)
+
+tab = c(15,110, 20,32,18,15, 6,97)
+tab = array(tab, c(2,2,2))
+dimnames(tab) <- list(disease=c("cancer","healthy"),
+                      gender=c("male","female"),
+                      nicotine_habit=c("smoker","nonsmoker"))
+
+tab
+(addmargins(tab))
+ftable(tab, row.vars=c("gender","nicotine_habit"), col.vars=c("disease"))
+margin.table(tab, c(2,1))
+
+
+(AC = margin.table(tab,c(2,1)))
+chisq.test(AC)
+assocstats(AC)
+
+#Odds ratio marginal for gender and cancer:
+
+# (cancer|male / nocancer|male) /  (cancer|female / nocancer|female)
+
+oddsratio(AC, log=F)
+(AC[1,1]/AC[1,2]) / (AC[2,1] / AC[2,2]) 
+exp(confint(oddsratio(AC)))
+
+
+#Conditional independence:
+
+oddsratio(tab, 3, log=F)
+
+# Manually conditional odds ratios by smoking habit:
+
+addmargins(tab)
+
+# smoker: {cancer male/no cancer male} / {Cancer famale/nocancer female}
+
+(tab[1]/tab[2])  /  (tab[3]/tab[4])
+
+# non-smoker: ca in males nonsmoking / health in males nonsmoker   /   ca in females non smokers / health females nonsmokers
+
+(tab[5]/tab[6]) / (tab[7]/tab[8])
+
+
+lor=oddsratio(tab,3) 
+exp(confint(lor)) ## CI 
+summary(lor)
