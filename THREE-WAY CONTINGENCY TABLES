@@ -1,12 +1,10 @@
-# From here: https://onlinecourses.science.psu.edu/stat504/node/105
-
 library(vcd)
 
 tab = c(19,132, 11,52,0,9, 6,97)
 tab = array(tab, c(2,2,2))
 dimnames(tab) <- list(DeathPen=c("yes","no"),
-                         Defendant=c("white","black"),
-                         Victim=c("white","black"))
+                      Defendant=c("white","black"),
+                      Victim=c("white","black"))
 
 tab
 (addmargins(tab))
@@ -19,13 +17,33 @@ chisq.test(AC)
 assocstats(AC)
 
 #Odds ratio marginal for defendant:
+
+# M(Death|W / noDeath|W) /  (Death|B / noDeath|B)
+
 oddsratio(AC, log=F)
-(AC[1,1]/AC[1,2]) / (AC[2,1] / AC[2,2])
+(AC[1,1]/AC[1,2]) / (AC[2,1] / AC[2,2]) 
 exp(confint(oddsratio(AC)))
 
 
 #Conditional independence:
 
 oddsratio(tab, 3, log=F)
+
+# Manually conditional odds ratios by victim:
+
+addmargins(tab)
+
+# victim White: {DeathDefendentW/noDeathDefendentW} / {DeathDefB/noDeathDefB}
+
+(tab[1]/tab[2])  /  (tab[3]/tab[4])
+
+# victim Black:
+
+(tab[5]/tab[6]) / (tab[7]/tab[8])
+
+# There is a zero, so we add 0.5 to all cells:
+
+((tab[5]+.5)/(tab[6]+.5)) / ((tab[7]+.5)/(tab[8]+.5))
+ 
 lor=oddsratio(tab,3) 
 exp(confint(lor)) ## CI 
