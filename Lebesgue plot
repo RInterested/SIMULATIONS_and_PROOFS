@@ -1,0 +1,31 @@
+# For this post: http://math.stackexchange.com/q/1721065/152225
+
+for(n in 5:50){
+n = n
+i = 0:n
+height = i/n
+x_segment = sqrt(i/n)
+base = sqrt((i + 1)/n) - sqrt(i/n)
+(area = sum(base * height))
+
+
+x = seq(0,1,0.0001)
+y = x^2
+plot(x,y,type='l', lwd=2, color="purple", xlab='', ylab='',
+     main = expression("Lebesgue integral of "*x^2*""))
+
+for(i in 1:length(i)){
+  x0=x_segment[i]
+  y0=height[i]
+  x1=x_segment[i] + base[i]
+  y1=y0
+
+xrun = seq(x0,x1,0.0001)
+yrun = rep(y0,length(xrun))
+yrun_reverse = rep(0, length(xrun))
+polygon(c(xrun,rev(xrun)), c(yrun, yrun_reverse),
+col=c("yellow"),border="white")
+
+segments(x0=x0,y0=y0,x1=x1,y1=y1,lwd=3, col="navyblue")
+}
+}
