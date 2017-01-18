@@ -1,0 +1,28 @@
+galton <- read.table(text = "Parent	Progeny	 SD
+                     0.21	    0.1726	 0.01988
+                     0.2	    0.1707	 0.01938
+                     0.19	    0.1637	 0.01896
+                     0.18	    0.164	   0.02037
+                     0.17	    0.1613	 0.01654
+                     0.16	    0.1617	 0.01594
+                     0.15	    0.1598	 0.01763", header=T)
+
+
+str(galton)
+plot(Progeny ~ Parent, galton, pch =21, col = 3, bg = 3, main = "Galton Data")
+
+weighted_model = lm(Progeny ~ Parent, weights=1/SD^2, data = galton)
+summary(weighted_model)
+
+
+W = 1 / galton[,3]^2
+weighted_model$weights
+all.equal(W, weighted_model$weights)
+
+X = model.matrix(weighted_model)
+W = diag(W)
+W
+Y = galton$Progeny
+solve(t(X) %*% (W %*% X)) %*% (t(X) %*% (W %*% Y))
+
+weighted_model$coefficients
