@@ -1,3 +1,5 @@
+# Code for this post: http://stats.stackexchange.com/a/257398/67822
+
 head(iris)
 
 # The dataset is practically  packed by species, and the random sampling of rows won't work without shuffling first:
@@ -16,11 +18,9 @@ nrow(data_test)
 y_train = data_train[,5]
 
 
-parameters = list(means = aggregate(. ~ Species, data = iris, FUN = "mean"), 
+par = list(means = aggregate(. ~ Species, data = iris, FUN = "mean"), 
                   sd = aggregate(. ~ Species, data = iris, FUN = "sd"))
-# E.g. row 2
 
-data_train[2,]
 
 # Pr(Setosa | measurements) = Pr(measurements | Setosa) Pr(Setosa)
 
@@ -36,11 +36,11 @@ species=0
 for(i in 1:nrow(data_train)){
   se=0; ve=0; vi=0
     for(j in 1:4){
-      se[j]= dnorm(data_train[i,j], mean = parameters$means[1,j+1], sd = parameters$sd[1,j+1])
-      ve[j]= dnorm(data_train[i,j], mean = parameters$means[2,j+1], sd = parameters$sd[2,j+1])
-      vi[j]= dnorm(data_train[i,j], mean = parameters$means[3,j+1], sd = parameters$sd[3,j+1])
+      se[j]= dnorm(data_train[i,j], mean = par$means[1,j+1], sd = par$sd[1,j+1])
+      ve[j]= dnorm(data_train[i,j], mean = par$means[2,j+1], sd = par$sd[2,j+1])
+      vi[j]= dnorm(data_train[i,j], mean = par$means[3,j+1], sd = par$sd[3,j+1])
     }
-  species[i]= c("setosa", "versicolor", "virginica")[which.max(c(prod(se)*prob[1], prod(ve)*prob[2],prod(vi)*prob[3]))]
+  species[i]= names[which.max(c(prod(se)*prob[1], prod(ve)*prob[2],prod(vi)*prob[3]))]
 }
 
 mean(species==data_train[,5])
@@ -49,9 +49,9 @@ species=0
 for(i in 1:nrow(data_test)){
   se=0; ve=0; vi=0
   for(j in 1:4){
-    se[j]= dnorm(data_test[i,j], mean = parameters$means[1,j+1], sd = parameters$sd[1,j+1])
-    ve[j]= dnorm(data_test[i,j], mean = parameters$means[2,j+1], sd = parameters$sd[2,j+1])
-    vi[j]= dnorm(data_test[i,j], mean = parameters$means[3,j+1], sd = parameters$sd[3,j+1])
+    se[j]= dnorm(data_test[i,j], mean = par$means[1,j+1], sd = par$sd[1,j+1])
+    ve[j]= dnorm(data_test[i,j], mean = par$means[2,j+1], sd = par$sd[2,j+1])
+    vi[j]= dnorm(data_test[i,j], mean = par$means[3,j+1], sd = par$sd[3,j+1])
   }
   species[i]= c("setosa", "versicolor", "virginica")[which.max(c(prod(se)*prob[1], prod(ve)*prob[2],prod(vi)*prob[3]))]
 }
@@ -59,3 +59,66 @@ for(i in 1:nrow(data_test)){
 mean(species==data_test[,5])
 table(predicted = species,actual = data_test[,5])
 
+------------------------------------------------------------------------------------------------------------------------------------
+
+# Code in this online post: https://eight2late.wordpress.com/2015/11/06/a-gentle-introduction-to-naive-bayes-classification-using-r/
+
+install.packages("mlbench")
+require(mlbench)
+data("HouseVotes84")
+d = HouseVotes84
+head(d)
+
+# Probability of a representative being a Democrat given that he/she
+# voted yes to V1, V2, V3:
+
+# P(D | V1...3 = y) = P(D) p(V1...3 = y | D)  /   P(v1...3 = y)
+# The denom can be treated as a constant, because we are interested
+# only in "relative" probabilities.
+
+# Using the chain rule of conditional probability:
+
+# p(D) p(V1...V3 = y |D)= p(D) p(V1 = y|D) p(V2 = y|D, v1 = y) p(V3 = y|D, V1 = y, V2 = y)
+
+# The Naive Bayes assumption is that these factors are independent:
+
+# p(V2 = y|D, V1 = y) = p(V2 = y|D)
+
+# p(V3 = y|D, v1 = y, V2 = y) = p(V3 = y|D)
+
+na_by_col_class = function (col,cls){return(sum(is.na(d[,col]) & d$Class==cls))}
+
+p_y_col_class = function(col,cls){
+  sum_y<-sum(d[,col]=="y" & d$Class==cls, na.rm = TRUE)
+  sum_n<-sum(d[,col]=="n" & d$Class==cls, na.rm = TRUE)
+  return(sum_y / (sum_y + sum_n))}
+
+#impute missing values.
+for (i in 2:ncol(d)) {
+  if(sum(is.na(d[,i])>0)) {
+    c1 = which(is.na(d[,i]) & d$Class=="democrat",  arr.ind = TRUE)
+    c2 = which(is.na(d[,i]) & d$Class=="republican",arr.ind = TRUE)
+    d[c1,i] = ifelse(runif(na_by_col_class(i,"democrat"))   < p_y_col_class(i, "democrat"), "y", "n")
+    d[c2,i] = ifelse(runif(na_by_col_class(i,"republican")) < p_y_col_class(i,"republican"),"y", "n")}
+}
+
+#divide into test and training sets
+#create new col "train" and assign 1 or 0 in 80/20 proportion via random uniform dist
+d[,"train"] <- ifelse(runif(nrow(d))<0.80,1,0)
+#get col number of train / test indicator column (needed later)
+trainColNum <- grep("train",names(d))
+#separate training and test sets and remove training column before modeling
+traind<- d[d$train==1,-trainColNum]
+testd <- d[d$train==0,-trainColNum]
+
+
+library(e1071)
+nb_model <- naiveBayes(Class~.,data = d)
+summary(nb_model)
+
+nb_test_predict <- predict(nb_model,d[,-1])
+#confusion matrix
+table(pred=nb_test_predict,true=d$Class)
+
+
+mean(nb_test_predict==d$Class)
