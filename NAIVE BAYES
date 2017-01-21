@@ -1,0 +1,61 @@
+head(iris)
+
+# The dataset is practically  packed by species, and the random sampling of rows won't work without shuffling first:
+data <- iris[order(runif(nrow(iris))), ]
+rownames(data) <- NULL
+
+# We select 60% of the rows towards the "training set":
+training_rows <- sample(1:nrow(data), round(0.60 * nrow(data)))
+data_train <- data[training_rows, ]
+nrow(data_train)
+
+# And 40% for the "testing set":
+data_test <- data[-training_rows, ]
+nrow(data_test)
+
+y_train = data_train[,5]
+
+
+parameters = list(means = aggregate(. ~ Species, data = iris, FUN = "mean"), 
+                  sd = aggregate(. ~ Species, data = iris, FUN = "sd"))
+# E.g. row 2
+
+data_train[2,]
+
+# Pr(Setosa | measurements) = Pr(measurements | Setosa) Pr(Setosa)
+
+# Pr setosa:
+
+prob = tabulate(data_train[,5]) / nrow(data_train)
+names(prob) = levels(iris[,5])
+prob
+
+names = levels(iris[,5])
+
+species=0
+for(i in 1:nrow(data_train)){
+  se=0; ve=0; vi=0
+    for(j in 1:4){
+      se[j]= dnorm(data_train[i,j], mean = parameters$means[1,j+1], sd = parameters$sd[1,j+1])
+      ve[j]= dnorm(data_train[i,j], mean = parameters$means[2,j+1], sd = parameters$sd[2,j+1])
+      vi[j]= dnorm(data_train[i,j], mean = parameters$means[3,j+1], sd = parameters$sd[3,j+1])
+    }
+  species[i]= c("setosa", "versicolor", "virginica")[which.max(c(prod(se)*prob[1], prod(ve)*prob[2],prod(vi)*prob[3]))]
+}
+
+mean(species==data_train[,5])
+
+species=0
+for(i in 1:nrow(data_test)){
+  se=0; ve=0; vi=0
+  for(j in 1:4){
+    se[j]= dnorm(data_test[i,j], mean = parameters$means[1,j+1], sd = parameters$sd[1,j+1])
+    ve[j]= dnorm(data_test[i,j], mean = parameters$means[2,j+1], sd = parameters$sd[2,j+1])
+    vi[j]= dnorm(data_test[i,j], mean = parameters$means[3,j+1], sd = parameters$sd[3,j+1])
+  }
+  species[i]= c("setosa", "versicolor", "virginica")[which.max(c(prod(se)*prob[1], prod(ve)*prob[2],prod(vi)*prob[3]))]
+}
+
+mean(species==data_test[,5])
+table(predicted = species,actual = data_test[,5])
+
