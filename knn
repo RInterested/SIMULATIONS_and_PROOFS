@@ -20,36 +20,43 @@ k = (round(round(sqrt(nrow(iris)))/2) * 2) + 1
 # This is the Iris dataset specific function to calculate KNN:
 
 knn_manual <- function(dat, k){
-    nearest_neighbors = function(x, y){
-        (sum((x - y)^2))^(1/(length(x)))
+  nearest_neighbors = function(x, y){
+    (sum((x - y)^2))^(1/(length(x)))
+  }
+  
+  rownames(dat) <- NULL
+  
+  vote <- rep(0, nrow(dat))
+  
+  for(j in 1: nrow(dat)){
+    
+    df = rbind(dat[j, ], dat[-j,])
+    rownames(df) <- NULL
+    
+    dist <- rep(0, nrow(df))
+    for(i in 2:(nrow(df) - 1)){
+      dist[i] <- nearest_neighbors(df[1, 1:4], df[i, 1:4])
     }
     
-    rownames(dat) <- NULL
-    
-    vote <- rep(0, nrow(dat))
-    
-    for(j in 1: nrow(dat)){
-        
-        df = rbind(dat[j, ], dat[-j,])
-        rownames(df) <- NULL
-        
-        dist <- rep(0, nrow(df))
-        for(i in 2:(nrow(df) - 1)){
-            dist[i] <- nearest_neighbors(df[1, 1:4], df[i, 1:4])
-        }
-        
-        friends = df[order(dist), ]
-        tab = table(friends[2:(k+1), 5])
-        ifelse(sum(tab == max(tab)) > 1,
-               vote[j] <- sample(dimnames(tab)[[1]][tab == max(tab)], 1),        
-               vote[j] <- dimnames(tab)[[1]][which.max(tab)])
-    }
-    print(table(vote, dat[,5]))
+    friends = df[order(dist), ]
+    tab = table(friends[2:(k+1), 5])
+    ifelse(sum(tab == max(tab)) > 1,
+           vote[j] <- sample(dimnames(tab)[[1]][tab == max(tab)], 1),        
+           vote[j] <- dimnames(tab)[[1]][which.max(tab)])
+  }
+  vote 
 }
 
+
+data_train[,6] = knn_manual(data_train, k)
+data_test[,6] =  knn_manual(data_test, k)
+
+
 # And these are the confusion matrices for the training and testing sets:
-knn_manual(data_train, k)
-knn_manual(data_test, k)
+print(table(predicted = data_train[,6], actual = data_train[,5]))
+print(table(predicted = data_test[,6], actual = data_test[,5]))
+mean(data_test[,6] == data_test[,5]) # Accuracy rate
+
 
 # Using the KNN function in R:
 library(class)
