@@ -1,0 +1,29 @@
+# From this post http://stats.stackexchange.com/a/179042/67822
+
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("EBImage")
+
+library(png)
+library(EBImage)
+
+img = readImage("baboon.png")
+display(img, method="raster")
+dim(img)
+is.matrix(img)
+baboon.svd = svd(img) 
+
+baboon.1   =  sweep(baboon.svd$u[,1,drop=FALSE],2,baboon.svd$d[1],"*") %*%
+  t(baboon.svd$v[,1,drop=FALSE])
+
+
+display(baboon.1, method="raster") #89 KB saved as png 646 x 466
+
+baboon.20  =  sweep(baboon.svd$u[,1:20,drop=FALSE],2,baboon.svd$d[1:20],"*") %*%
+  t(baboon.svd$v[,1:20,drop=FALSE])
+
+display(baboon.20, method="raster") #179 KB saved as png 646 x 466
+
+baboon.250 =  sweep(baboon.svd$u[,1:250,drop=FALSE],2,baboon.svd$d[1:250],"*") %*%
+  t(baboon.svd$v[,1:250,drop=FALSE])
+display(baboon.250, method ="raster")
+
