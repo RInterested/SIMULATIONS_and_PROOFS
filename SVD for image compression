@@ -6,24 +6,57 @@
 library(png)
 library(EBImage)
 
-img = readImage("baboon.png")
+# At this point the picture baboon.png should be in the R directory. It can be downloaded from here:
+# https://cloud.githubusercontent.com/assets/9312897/23598179/a62e25c4-0206-11e7-987e-e03568c40961.png
+
+img = readImage("baboon.png") 
 display(img, method="raster")
 dim(img)
 is.matrix(img)
 baboon.svd = svd(img) 
 
-baboon.1   =  sweep(baboon.svd$u[,1,drop=FALSE],2,baboon.svd$d[1],"*") %*%
+dim(baboon.svd$u)
+
+dim(baboon.svd$v)
+
+sqrt(sum(baboon.svd$u[,2]^2))
+sqrt(sum(baboon.svd$v[,2]^2))
+
+# svd = rotate stretch rotate and AV = USigma
+
+all.equal(img %*% baboon.svd$v,  baboon.svd$u %*% diag(baboon.svd$d))
+
+# Recovering the original picture:
+
+display(baboon.svd$u %*% (diag(baboon.svd$d) %*% t(baboon.svd$v)), method = "raster")
+
+
+# The first singular value contains the maximum variance (like in PCA):
+
+eigenbaboon   =  sweep(baboon.svd$u[,1,drop=FALSE],2,baboon.svd$d[1],"*") %*%
   t(baboon.svd$v[,1,drop=FALSE])
 
 
-display(baboon.1, method="raster") #89 KB saved as png 646 x 466
+display(eigenbaboon, method="raster") #89 KB saved as png 646 x 466
 
 baboon.20  =  sweep(baboon.svd$u[,1:20,drop=FALSE],2,baboon.svd$d[1:20],"*") %*%
   t(baboon.svd$v[,1:20,drop=FALSE])
 
 display(baboon.20, method="raster") #179 KB saved as png 646 x 466
 
+baboon.50  =  sweep(baboon.svd$u[,1:50,drop=FALSE],2,baboon.svd$d[1:50],"*") %*%
+  t(baboon.svd$v[,1:50,drop=FALSE])
+
+display(baboon.50, method = "raster")
+
+baboon.100  =  sweep(baboon.svd$u[,1:100,drop=FALSE],2,baboon.svd$d[1:100],"*") %*%
+  t(baboon.svd$v[,1:100,drop=FALSE])
+
+display(baboon.100, method="raster")
+
 baboon.250 =  sweep(baboon.svd$u[,1:250,drop=FALSE],2,baboon.svd$d[1:250],"*") %*%
   t(baboon.svd$v[,1:250,drop=FALSE])
 display(baboon.250, method ="raster")
+
+
 
