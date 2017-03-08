@@ -54,15 +54,12 @@ assocstats(salary)
 
 http://stats.stackexchange.com/q/266001/67822
 
-memory = array(
-  c(38, 12, 102, 141, 12, 9, 136, 383, 4, 5),
-  dim=c(2, 2, 3),
-  dimnames=list(memory = c("yes", "no"),
-                attitude = c("moderate", "no"),
-                age = c("15-24","25-39",">40")
-                )
-) 
-addmargins(memory)
-assocstats(memory)
-require(vcd)
-mosaic(~ memory + age + attitude, memory, shade = T)
+memo = data.frame(expand.grid(
+  age = c("15-24", "25-39", ">40"),
+  attitude = c("moderate", "no"),
+  memory = c("yes", "no")),
+  count = c(32,53,10,3,11,50,10,30,10,25,7,5) ) 
+tab = xtabs(count ~ ., memo)
+addmargins(tab)
+mosaic(~ memory + age + attitude, data = tab, shade = T)
+
