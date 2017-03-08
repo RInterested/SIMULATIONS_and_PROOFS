@@ -54,12 +54,26 @@ assocstats(salary)
 
 http://stats.stackexchange.com/q/266001/67822
 
-memo = data.frame(expand.grid(
+tab = data.frame(expand.grid(
   age = c("15-24", "25-39", ">40"),
-  attitude = c("moderate", "no"),
+  attitude = c("no","moderate"),
   memory = c("yes", "no")),
-  count = c(32,53,10,3,11,50,10,30,10,25,7,5) ) 
-tab = xtabs(count ~ ., memo)
-addmargins(tab)
+  count = c(1,4,3,1,8,39,32,36,25,35,32,38) ) 
+(tab = xtabs(count ~ ., data = tab))
+
+require(vcd)
 mosaic(~ memory + age + attitude, data = tab, shade = T)
+expected = mosaic(~ memory + age + attitude, data = tab, type = "expected") 
+expected
+
+# Finding as an example the expected counts in >40 with memory and moderate att.:
+over_forty = sum(3,39,25,38)
+mem_yes = sum(1,4,3,1,8,39)
+att_mod = sum(1,8,39,35,32,38)
+exp_older_mem_mod = over_forty * mem_yes * att_mod / sum(tab)^2
+
+# Corresponding standardized Pearson's residual:
+
+(39 - exp_older_mem_mod) / sqrt(exp_older_mem_mod)
+
 
