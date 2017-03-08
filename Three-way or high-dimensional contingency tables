@@ -1,0 +1,68 @@
+# Page 5 in https://cran.r-project.org/web/packages/DescTools/vignettes/TablesInR.pdf
+
+tab <- data.frame(expand.grid(
+  Hair = c("Black", "Brown", "Red", "Blond"),
+  Eye = c("Brown", "Blue", "Hazel", "Green"),
+  Sex = c("Male", "Female")),
+  count = c(32,53,10,3,11,50,10,30,10,25,7,5,3,15,7,8,
+            36,66,16,4,9,34,7,64,5,29,7,5,2,14,7,8) ) 
+
+tab = xtabs(count ~ ., data=tab)
+
+mosaic(tab, shade=T, legend=T)
+assoc(tab, shade=T, legend=T)
+mosaic(HairEyeColor, shade = T)
+assoc(HairEyeColor, shade = T)
+
+
+######
+
+# http://stats.stackexchange.com/a/147868/67822 
+
+library(ca)
+tab = as.table(rbind(c(28, 4,  0, 56),
+                     c(38, 5,  9, 10),
+                     c( 6, 6, 14, 13) ))
+names(dimnames(tab)) = c("activity", "period")
+rownames(tab)        = c("feed", "social", "travel")
+colnames(tab)        = c("morning", "noon", "afternoon", "evening")
+tab
+
+require(vcd)
+mosaic(tab, shade=T, legend=T)
+assoc(tab, shade=T, legend=T)
+
+######
+
+# http://www.statmethods.net/stats/frequencies.html
+
+salary <- array(
+  c(38, 12, 102, 141, 12, 9, 136, 383),
+  dim=c(2, 2, 2),
+  dimnames=list(exposure = c("exposed", "not"),
+                disease = c("case", "control"),
+                salary = c("<1000", ">=1000"))
+) 
+salary
+addmargins(salary)
+mosaic(salary, shade = T)
+mantelhaen.test(salary)
+assocstats(salary)
+
+
+######
+
+http://stats.stackexchange.com/q/266001/67822
+
+memory = array(
+  c(38, 12, 102, 141, 12, 9, 136, 383, 4, 5),
+  dim=c(2, 2, 3),
+  dimnames=list(memory = c("yes", "no"),
+                attitude = c("moderate", "no"),
+                age = c("15-24","25-39",">40")
+                )
+) 
+addmargins(memory)
+assocstats(memory)
+require(vcd)
+mosaic(~ memory + age + attitude, memory, shade = T)
