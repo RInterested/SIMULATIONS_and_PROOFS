@@ -54,13 +54,14 @@ assocstats(salary)
 
 http://stats.stackexchange.com/q/266001/67822
 
-tab = data.frame(expand.grid(
+tab_df = data.frame(expand.grid(
   age = c("15-24", "25-39", ">40"),
   attitude = c("no","moderate"),
   memory = c("yes", "no")),
   count = c(1,4,3,1,8,39,32,36,25,35,32,38) ) 
-(tab = xtabs(count ~ ., data = tab))
-
+(tab = xtabs(count ~ ., data = tab_df))
+fit <- glm(count ~ age + attitude + memory, data=tab_df, family=poisson())
+summary(fit)
 require(vcd)
 mosaic(~ memory + age + attitude, data = tab, shade = T)
 expected = mosaic(~ memory + age + attitude, data = tab, type = "expected") 
