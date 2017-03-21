@@ -10,7 +10,7 @@ train.dnn <- function(x, #columns of explanatory variables,
                       # currently, only support 1 hidden layer
                       hidden = 6, 
                       # max iteration steps:
-                      maxit = 2000,
+                      maxit = 20000,
                       # delta loss 
                       abstol = 1e-2,
                       # learning rate
@@ -172,11 +172,11 @@ predict.dnn <- function(model, data = X.test) {
   # new data, transfer to matrix
   new.data <- data.matrix(data)
   new.data <- cbind(new.data, rep(1, nrow(new.data)))
-  # Feed Forwad
+  # Feed Forward
   hidden.layer <- new.data %*% model$W1
   hidden.layer <- 1 / (1 + exp(- hidden.layer))
-  hidden.layer = cbind(hidden.layer, rep(1, nrow(hidden.layer)))
-  score <- hidden.layer %*% model$W2
+  hidden.layer.bias = cbind(hidden.layer, rep(1, nrow(hidden.layer)))
+  score <- hidden.layer.bias %*% model$W2
   
   # Loss Function: softmax
   score.exp <- exp(score)
