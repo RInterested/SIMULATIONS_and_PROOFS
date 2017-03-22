@@ -1,12 +1,12 @@
 # From here http://www.parallelr.com/r-deep-neural-network-from-scratch/
 
-data = iris[order(runif(nrow(iris))), ] ; rownames(data) <- NULL 
-training_rows = sample(1:nrow(data), round(0.60 * nrow(data))) 
-# Select 60% of the rows towards the "training set"
-data_train = data[training_rows, ]
-data_test  = data[-training_rows, ] # and 40% for the testing set
 
 set.seed(19)
+
+data = iris[order(runif(nrow(iris))), ] ; rownames(data) <- NULL 
+training_rows = sample(1:nrow(data), round(0.60 * nrow(data))) # Select 60% of the rows towards the "training set"
+data_train = data[training_rows, ]
+data_test  = data[-training_rows, ] # and 40% for the testing set
 
 
 train =     function( x, # columns of explanatory variables - the first four columns
@@ -17,71 +17,66 @@ train =     function( x, # columns of explanatory variables - the first four col
                       lr = .01,     # learning rate
                       reg = .001 )  # regularization rate 
 {
-  # Housekeeping:
-  N = nrow(data)  # total number of data set  
-  X = unname(data.matrix(data[ ,x])) # turn input data into a model matrix of explanatory variables without headers
-  X = cbind(X, rep(1, nrow(X))) # add a bias column
-  Y = data[ ,y] # extract dependent variable
-  if(is.factor(Y)) {Y <- as.integer(Y)} # Turns species names (set, virg, versi) into numbers 1,2,3
-  Y.len = length(unique(Y)) # Number of unique species = 3
-  Y.set = sort(unique(Y))   # In order - the output of this is [1] 1 2 3
-  Y.index = cbind(1:N, match(Y, Y.set)) # Matching example number and "answer" (1, 2, 3)
-  D = ncol(X) # number columns in model matrix
-  
-  # Initiating weights:  
-  W1 = 0.01 * matrix(rnorm(ncol(X) * hidden), nrow = ncol(X)) 
-  W2 = 0.01 * matrix(rnorm((hidden + 1) * Y.len ), nrow = hidden + 1)
-  
-  i = 0
-  while (i < iter){
-    i = i + 1
-    hidden.in       = X %*% W1                  # Producing the input for the hidden layer
-    hidden.out      = 1 / (1 + exp(-hidden.in)) # sigmoid activation of the hidden layer
-    hidden.out.bias = cbind(hidden.out,rep(1, nrow(hidden.out))) # Introducing bias as a column of 1's.
-    outer.in        = hidden.out.bias %*% W2
-    # Softmax:
-    outer.net.exp   = exp(outer.in)             # Exponentiating the inputs of the outer layer
-    outer.out       = sweep(outer.net.exp, 1, rowSums(outer.net.exp), '/') # Normalizing into probabilities
-    
-    # Backpropagation:
-    dscores = outer.out
-    # Softmax derivative wrt the input of the outer layer (applied to "true" column only):
-    dscores[Y.index] = dscores[Y.index] - 1    
-    loss.wrt.outer.in = dscores / N # Dividing 1/number of examples.
-    # Updating last matrix of weights (W2):
-    dW2.temp = t(hidden.out.bias) %*% loss.wrt.outer.in
-    dW2 = dW2.temp  + reg * W2 # Regularization
-    W2 = W2 - lr * dW2
-    # Updating first matrix of weights (W1):
-    loss.wrt.hidden.out = loss.wrt.outer.in %*% t(W2[-nrow(W2),]) 
-    #  excluding last row W2 because we can't attribut error to the hidden layer when the bias was added later.
-    sigmoid = hidden.out * (1 - hidden.out) # Derivative of the sigmoid function in the hidden layer.
-    dW1.temp = t(X) %*% (loss.wrt.hidden.out * sigmoid)
-    dW1 = dW1.temp + reg * W1
-    W1 = W1 - lr * dW1
-  }
-  # Results:
-  model <- list( W1= W1, W2= W2)
-  return(model)
+              # Housekeeping:
+
+          N = nrow(data)  # total number of data set  
+          X = unname(data.matrix(data[ ,x])) # turn input data into a model matrix of explanatory variables without headers
+          X = cbind(X, rep(1, nrow(X))) # add a bias column
+          Y = data[ ,y] # extract dependent variable
+          if(is.factor(Y)) {Y <- as.integer(Y)} # Turns species names (set, virg, versi) into numbers 1,2,3
+          Y.len = length(unique(Y)) # Number of unique species = 3
+          Y.set = sort(unique(Y))   # In order - the output of this is [1] 1 2 3
+          Y.index = cbind(1:N, match(Y, Y.set)) # Matching example number and "answer" (1, 2, 3)
+          D = ncol(X) # number columns in model matrix
+
+          # Initiating weights:  
+          W1 = 0.01 * matrix(rnorm(ncol(X) * hidden), nrow = ncol(X)) 
+          W2 = 0.01 * matrix(rnorm((hidden + 1) * Y.len ), nrow = hidden + 1)
+              
+          i = 0
+          while (i < iter){
+            i = i + 1
+            hidden.in       = X %*% W1                  # Producing the input for the hidden layer
+            hidden.out      = 1 / (1 + exp(-hidden.in)) # sigmoid activation of the hidden layer
+            hidden.out.bias = cbind(hidden.out,rep(1, nrow(hidden.out))) # Introducing bias as a column of 1's.
+            outer.in        = hidden.out.bias %*% W2
+            # Softmax:
+            outer.net.exp   = exp(outer.in)             # Exponentiating the inputs of the outer layer
+            outer.out       = sweep(outer.net.exp, 1, rowSums(outer.net.exp), '/') # Normalizing into probabilities
+ 
+                # Backpropagation:
+            dscores = outer.out
+            # Softmax derivative wrt the input of the outer layer (applied to "true" column only):
+            dscores[Y.index] = dscores[Y.index] - 1    
+            loss.wrt.outer.in = dscores / N # Dividing 1/number of examples.
+                # Updating last matrix of weights (W2):
+            dW2.temp = t(hidden.out.bias) %*% loss.wrt.outer.in
+            dW2 = dW2.temp  + reg * W2 # Regularization
+            W2 = W2 - lr * dW2
+                # Updating first matrix of weights (W1):
+            loss.wrt.hidden.out = loss.wrt.outer.in %*% t(W2[-nrow(W2),]) 
+            #  excluding last row W2 because we can't attribut error to the hidden layer when the bias was added later.
+            sigmoid = hidden.out * (1 - hidden.out) # Derivative of the sigmoid function in the hidden layer.
+            dW1.temp = t(X) %*% (loss.wrt.hidden.out * sigmoid)
+            dW1 = dW1.temp + reg * W1
+            W1 = W1 - lr * dW1
+          }
+                # Results:
+            model <- list( W1= W1, W2= W2)
+            return(model)
 }        
 
-
-
-
 model = train(x = 1:4, y = 5, data = data_train, hidden = 6)
-
-
 
 new.data = as.matrix(cbind(data_test[-5], rep(1, nrow(data_test))))
 hidden.layer = new.data %*% model$W1
 hidden.layer = 1 / (1 + exp(- hidden.layer))
 hidden.layer.bias = cbind(hidden.layer, rep(1, nrow(hidden.layer)))
 score = hidden.layer.bias %*% model$W2
-score.exp = exp(score)
-probs = sweep(score.exp, 1, rowSums(score.exp), '/') 
-labels.predicted = max.col(probs)
+score.exp <- exp(score)
+probs <-sweep(score.exp, 1, rowSums(score.exp), '/') 
+labels.predicted <- max.col(probs)
 table(labels.predicted)
-
-table(data_test[,5], labels.predicted)
 #accuracy
 mean(as.integer(data_test[, 5]) == labels.predicted)
+# [1] 0.85
