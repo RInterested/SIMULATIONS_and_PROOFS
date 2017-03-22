@@ -3,7 +3,7 @@
 
 # From here http://www.parallelr.com/r-deep-neural-network-from-scratch/
 
-
+set.seed(9)
 
 data = iris[order(runif(nrow(iris))), ] ; rownames(data) <- NULL 
 training_rows = sample(1:nrow(data), round(0.60 * nrow(data))) # Select 60% of the rows towards the "training set"
@@ -82,3 +82,15 @@ table(labels.predicted)
 table(data_test[,5], labels.predicted)
 #accuracy
 mean(as.integer(data_test[, 5]) == labels.predicted)
+
+palette(c("purple2","indianred1", "orchid1"))
+
+plot(data_test[,1:4], main = "NN Classification Accuracy",
+     cexsub = "test",
+     col = ifelse(as.numeric(data_test[,5]) == labels.predicted,
+                  as.numeric(data_test[,5]), "gray30"), 
+     pch = ifelse(as.numeric(data_test[,5]) == labels.predicted,
+                  19, 18), 
+     cex = ifelse(as.numeric(data_test[,5]) == labels.predicted,
+                  .8, 3))
+title(sub="diamonds = misclassified examples")
