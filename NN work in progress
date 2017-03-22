@@ -1,6 +1,10 @@
 # From here http://www.parallelr.com/r-deep-neural-network-from-scratch/
 
 
+# From here http://www.parallelr.com/r-deep-neural-network-from-scratch/
+
+
+
 data = iris[order(runif(nrow(iris))), ] ; rownames(data) <- NULL 
 training_rows = sample(1:nrow(data), round(0.60 * nrow(data))) # Select 60% of the rows towards the "training set"
 data_train = data[training_rows, ]
@@ -75,5 +79,6 @@ score.exp <- exp(score)
 probs <-sweep(score.exp, 1, rowSums(score.exp), '/') 
 labels.predicted <- max.col(probs)
 table(labels.predicted)
+table(data_test[,5], labels.predicted)
 #accuracy
 mean(as.integer(data_test[, 5]) == labels.predicted)
