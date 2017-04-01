@@ -1,0 +1,139 @@
+% http://www.dspguide.com/ch8/4.htm
+% https://www.researchgate.net/post/Can_someone_please_provide_me_some_MATLAB_code_for_image_transforms_2D_DFT
+
+% x = input sequence
+% X = dft of sequence
+x = [1 2 4 1 2 1 2 2 3 2 3];
+
+N = length(x);    % length of the input vector - in this case 11.
+for k = 1 : N     % no. of bins
+    X(k) = 0;     % empty vector to collect waves 
+    for n = 1 : N % there are as many sinusoidal waves as input elements
+        % Each wave is added on the previous: X(k) + ...
+        % The corresponding element of the input x(n) is multiplied by...
+        % exp{-2pii/N...} We divide the circle 2pi into N segments
+        % exp{... (n - 1) (k -1)} We start at zero and go to N - 1 to round up the circle:
+        X(k) = X(k) + x(n).*exp(-1i.* 2.* pi.*(n - 1).*(k - 1)./ N);
+    end
+end
+
+% returns X
+
+f = 0:N-1;
+subplot(311)
+stem(0:N-1, x)
+title('Sequence x (in time domain)')
+xlabel('time')
+ylabel('Amplitude')
+grid;
+
+subplot(323)
+stem(f,abs(X))
+title('Magnitude of Fourier Coeffients using function')
+ylabel('|X|')
+grid;
+
+subplot(325)
+stem(f,angle(X))
+title('Angle of Fourier Coeffients using function')
+xlabel('Frequency coefficients')
+ylabel('<X')
+grid;
+
+subplot(324)
+stem(f,abs(fft(x)))
+title('Magnitude of Fourier Coeffients using fft function')
+ylabel('|X|')
+grid;
+
+subplot(326)
+stem(f,angle(fft(x)))
+title('Angle of Fourier Coeffients using fft function')
+xlabel('Frequency coefficients')
+ylabel('<X')
+grid;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% specam.m Compute the spatial frequency spectrum of a square
+%           aperture of side L.
+clear all;  % Clear memory; print header
+
+%@ Initialize variables
+%
+NGrid = 100;            % Number of grid points for plots
+xMax = 5;              % Values plotted from x= -xMax to x= xMax
+yMax = xMax;           % Values plotted from y= -yMax to y= yMax
+for i=1:NGrid
+  xPlot(i) = -xMax + (i-1)/(NGrid-1)*(2*xMax); % x values to plot
+  yPlot(i) = -yMax + (i-1)/(NGrid-1)*(2*yMax); % y values to plot
+end
+
+%@ Loop over all grid points and evaluate E(x,y) on grid
+for i=1:NGrid
+ y = yPlot(i);
+ for j=1:NGrid
+   x = xPlot(j);   
+ 
+   %@ Compute amplitude of electric field at the grid point
+   EPlot(i,j) = sin(pi*x)*sin(pi*y)/(pi*pi*x*y);
+  
+ end
+end
+
+%@ Plot contours of constant electric potential
+clf;  figure(gcf);    % Clear figure; bring figure window forward
+mesh(xPlot,yPlot,EPlot);  % Plot electric amplitude in contour/mesh plot
+xlabel('x, Spatial frequency');  
+ylabel('y, Spatial frequency'); 
+zlabel('Spectral amplitude');
+title('Fourier Transform of a Square Aperature');
+hold off;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+fxy =[1 2 3 9; 8 5 1 2; 9 8 7 2] % a 3 x 4 matrix
+sfxy = size(fxy); % determine size of fxy, which is 3 x 4
+m = sfxy(1, 1);  % no. of rows of the matrix, which is 3
+n = sfxy(1,2);   % no. of columns of the matrix, which is 4
+% double summation over u v using f(x ,y) as element   
+for u = 1 :1 :m        % begin with row of dft of fxy; u = 1, 2, 3                   
+  for v = 1 :1 :n      % col fxy; v = 1, 2, 3, 4                       
+    r(u,v) = 0;        % set init to zero; m 3 x 4 matrix of zeros
+    for x = 1 :1 :m    % begin summation over x                                                       
+      for y = 1 :1 :n  % begin summation over x                                                        
+        axy = fxy(x,y)/m/n;  % element xy       
+         % keep in mind index x in formula is from 0 but here it starts from 1 so..(x-1)                                                       
+         r(u,v) = r(u,v) + axy * cos(2 * pi *(u *(x - 1) / m + v *(y - 1) / n));                                     
+       end                                                   
+     end                           
+ end 
+end 
+r
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Work in progress (2 DFT):
+
+% x = input sequence
+% X = dft of sequence
+x = magic(5);
+
+
+M = size(x)(1);
+N = size(x)(2);
+MN = zeros(size(x));    % mat of zeros size of x.
+for u = 1 : M     % no. of bins in one direction
+    X(u) = 0;     % setting up a counter at zero 
+    
+    for n = 1 : N % there are as many sinusoidal waves as input elements
+        % Each wave is added on the previous: X(k) + ...
+        % The corresponding element of the input x(n) is multiplied by...
+        % exp{-2pii/N...} We divide the circle 2pi into N segments
+        % exp{... (n - 1) (k -1)} We start at zero and go to N - 1 to round up the circle:
+        X(k) = X(k) + x(n).*exp(-1i.* 2.* pi.*(n - 1).*(k - 1)./ N);
+    end
+end
+
+% returns N
