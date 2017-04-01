@@ -8,6 +8,7 @@ y = -3:.2:3; %// y axis
 Z = mvnpdf([X(:) Y(:)],mu,sigma); %// compute Gaussian pdf
 Z = reshape(Z,size(X)); %// put into same size as X, Y
 %// contour(X,Y,Z), axis equal  %// contour plot; set same scale for x and y...
+colormap(jet)
 surf(X,Y,Z) %// ... or 3D plot
 
 fprintf("Program pause press enter to see the contour plot.")
