@@ -114,6 +114,40 @@ r
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Plotting ideas:
+
+clear
+close all
+clc
+c = 1560; %m/s
+rhoK = 1040; %kg/m^3
+rhoS = 1;
+K1 = 1/(rhoK*c^2);
+K2 = 1;
+L = 0.05;%m
+f1 = 2e6; %hz
+f2 = 2e6; %hz
+w = 2*pi*f1;
+w0 = 2*pi*f2;
+k = w*(K1*rhoK)^0.5;
+n = 60;
+t = linspace(0,3/f1,n); %s
+z = linspace(0,L,n); %m
+t1 = t*1e9; %ns
+z1 = z *100; %cm
+A = (exp(1i*(w0-w)*t)+exp(-1i*(w0+w)*t))/(2*(1+exp(2i*k*L)));
+B = (exp(1i*(w0-w)*t)+exp(-1i*(w0+w)*t))/(2*(1+exp(-2i*k*L)));
+P = ((A.*exp(1i*w*t))'*exp(1i*k*z))+((B.*exp(1i*w*t))'*exp(-1i*k*z));
+% P1 = (exp(1i*w*t))'*((A.*exp(1i*k*z))+(B.*exp(-1i*k*z)));
+figure()
+surf(t1,z1,real(P));
+title('High Frequency Sound Wave')
+ylabel('space(cm)')
+xlabel('time(ns)')
+zlabel('Pressure(Pa)')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Work in progress (2 DFT):
 
 % x = input sequence
