@@ -8,7 +8,12 @@ clc;
 Im = imread('circ.png');
 pkg load image
 
+
 Im = rgb2gray(Im);
+
+
+
+A = fft2(double(Im));
 
 subplot(131);
 h = imagesc(Im);
@@ -17,22 +22,16 @@ set(h2,'YDir','Normal');
 axis equal tight;
 title("Circle");
 
-
-A = fft2(double(Im));
-
-
 subplot(132);
-h = imshow(abs(fftshift(A)),[24 100000])
-title('Image A FFT2 Magnitude');
+h = imshow(abs(fftshift(A)),[24 100000]);
 h2 = get(h,'Parent');
 set(h2,'YDir','Normal');
 axis equal tight;
-title("2D FFT");
+title("2D FFT Magnitude");
 
 subplot(133);
-h = imshow(angle(fftshift(A)),[-pi pi]) 
-title('Image A FFT2 Phase');
+h = imshow(angle(fftshift(A)),[-pi pi]);
 h2 = get(h,'Parent');
 set(h2,'YDir','Normal');
 axis equal tight;
-title("2D FFT");
+title("2D FFT Phase");
