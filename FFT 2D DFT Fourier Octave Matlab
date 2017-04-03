@@ -1,0 +1,38 @@
+
+% Simulation performed with this example: https://drive.google.com/file/d/0Bwl-HpVJ_5PeV01SNFJ6LUpGams/view?usp=sharing
+
+% Reference: http://matlabgeeks.com/tips-tutorials/how-to-do-a-2-d-fourier-transform-in-matlab/
+
+clear all;
+clc;
+Im = imread('circ.png');
+pkg load image
+
+Im = rgb2gray(Im);
+
+subplot(131);
+h = imagesc(Im);
+h2 = get(h,'Parent');
+set(h2,'YDir','Normal');
+axis equal tight;
+title("Circle");
+
+
+A = fft2(double(Im));
+
+
+subplot(132);
+h = imshow(abs(fftshift(A)),[24 100000])
+title('Image A FFT2 Magnitude');
+h2 = get(h,'Parent');
+set(h2,'YDir','Normal');
+axis equal tight;
+title("2D FFT");
+
+subplot(133);
+h = imshow(angle(fftshift(A)),[-pi pi]) 
+title('Image A FFT2 Phase');
+h2 = get(h,'Parent');
+set(h2,'YDir','Normal');
+axis equal tight;
+title("2D FFT");
