@@ -157,39 +157,42 @@ clear all;
 %BUILDING UP A FIGURE (A TRIANGLE) WITH 1'S INSIDE AND 0'S OUTSIDE:
 
 figure('Color','w','Units','normalized','OuterPosition',[0 0.05 1 0.95]); % empty canvas
-a = 1; % lattice spacing of 1 physical width and height of 1
-w  = .9 * a; % triangle sides
-Nx = 255; % grid with 255 points across
-Ny = Nx; % same height
-dx = a / Nx; % cell size
-dy = a /Ny; % cell height
-xa = [0: Nx - 1] * dx; % horizontal position of each point
-ya = [0: Ny - 1] * dy; % vertical position of each point
-xa = xa - mean(xa); % centering
-ya = ya - mean(ya);
-[Y,X] =  meshgrid(ya,xa);
+unitary_canvas = 1;               % lattice spacing of 1 physical width and height of 1
+tri_sides  = .9 * unitary_canvas; % triangle sides
+grid256X = 255;                   % grid with 255 points across
+grid256Y = grid256X;              % same height
+pix_size_x = unitary_canvas / grid256X;     % cell size
+pix_size_y = unitary_canvas /grid256Y;      % cell height
+X_px_position = [0: grid256X - 1] * pix_size_x;   % horizontal position of each point
+Y_px_position = [0: grid256Y - 1] * pix_size_y;   % vertical position of each point
+X_px_position = X_px_position - mean(X_px_position); % centering
+Y_px_position = Y_px_position - mean(Y_px_position);
+[Y,X] =  meshgrid(Y_px_position,X_px_position);
 
-h = w * sqrt(3)/2; % height of an equilateral triangle in relation to sides
-ny = round(h / dy); % height in cells of the triangle
-ny1 = 1 + floor((Ny - ny)/2); % floor is rounding. this gives the index of the top triangle.
-ny2 = ny1 + ny - 1; % bottom of the triangle
+tri_height = tri_sides * sqrt(3)/2;    % height of an equilateral triangle in relation to sides
+tri_ht_cells = round(tri_height / pix_size_y);        % height in cells of the triangle
+tri_top_ind = 1 + floor((grid256Y - tri_ht_cells)/2); % floor is rounding. 
+% this gives the index of the top triangle.
+tri_bottom_ind = tri_top_ind + tri_ht_cells - 1;      % bottom of the triangle
 
-UC = zeros(Nx, Ny); % UC = the triangle
+UC = zeros(grid256X, grid256Y);                       % UC = the triangle started off... 
 
   
-  for ny = ny1 : ny2
-  f = 1 - (ny - ny1 + 1) / (ny2 - ny1 + 1); % index for how many cells wide we are
-  nx = round(f * w / dx); % where we are at each altitude level
-  nx1 = 1 + floor((Nx - nx)/2);
-  nx2 = nx1 + nx + 1;
-  UC(nx1: nx2, ny) = 1;
+  for tri_ht_cells = tri_top_ind : tri_bottom_ind
+  width_index = 1 - (tri_ht_cells - tri_top_ind + 1) / (tri_bottom_ind - tri_top_ind + 1); 
+  % index for how many cells wide we are
+  where_are_we = round(width_index * tri_sides / pix_size_x); 
+  % where we are at each altitude level
+  nx1 = 1 + floor((grid256X - where_are_we)/2);
+  nx2 = nx1 + where_are_we + 1;
+  UC(nx1: nx2, tri_ht_cells) = 1; % assigning 1's inside the triangle
   end
 \  
 
 
 
 subplot(231); % plotting the triangle
-hh = imagesc(xa,ya,UC');
+hh = imagesc(X_px_position,Y_px_position,UC');
 h2 = get(hh,'Parent');
 set(h2,'YDir','Normal');
 axis equal tight;
@@ -202,11 +205,12 @@ title("Unit Cell");
 
 %DOING THE FFT THE FAST WAY (BUILT-IN FFT2 2DFT FUNCTION):
 
-A = fftshift(fft2(UC))/(Nx * Ny); % The actual 2D DFT
-% ffshift is to bring FFT values from corner to center
-% / (Nx * Ny) to preven huge coefficients (scaling)
+A = fftshift(fft2(UC))/(grid256X * grid256Y); 
+    % The actual 2D DFT
+    % ffshift is to bring FFT values from corner to center
+    % / (grid256X * grid256Y) to preven huge coefficients (scaling)
 subplot(232); 
-hh = imagesc(xa,ya,real(A'));
+hh = imagesc(X_px_position,Y_px_position,real(A'));
 h2 = get(hh,'Parent');
 set(h2,'YDir','normal');
 axis equal tight;
@@ -219,24 +223,25 @@ title("FFT2");
 
 % Tuncating the FFT to appreciate the center (where the info is):
 
-NP = 7; %no. points horizontally to grab
-NQ = 7; %no. points vertically
-p0 = ceil(Nx/2); % middle horizontally
-q0 = ceil(Ny/2); % middle vertically
-np1 = p0 -  floor(NP/2); % first point horiz
-np2 = p0 +  floor(NP/2); % last point horiz
-nq1 = q0 -  floor(NQ/2); % first point horiz
-nq2 = q0 +  floor(NQ/2);
+hor7grab = 7;       %no. points horizontally to grab
+vert7grab = 7;      %no. points vertically
+middleX = ceil(grid256X/2); % middle horizontally
+middleY = ceil(grid256Y/2); % middle vertically
+first_horiz_point = middleX -  floor(hor7grab/2); % first point horiz
+last_horiz_point = middleX +  floor(hor7grab/2);  % last point horiz
+first_vert_point = middleY -  floor(vert7grab/2); % first point vert
+last_vert_point = middleY +  floor(vert7grab/2);
 
 % A was the fft, now AT will stand with fft truncated:
 
-AT = A(np1:np2, nq1:nq2); % A truncated FFT
-pa = [-floor(NP/2): floor(NP/2)]; % new axis
+AT = A(first_horiz_point:last_horiz_point, first_vert_point:last_vert_point); 
+% AT = truncated FFT
+trunc_X_ax = [-floor(hor7grab/2): floor(hor7grab/2)]; % new axis
 % -3  -2  -1   0   1   2   3
-qa = [-floor(NQ/2) : floor(NQ/2)];
+trunc_Y_ax = [-floor(vert7grab/2) : floor(vert7grab/2)];
 % -3  -2  -1   0   1   2   3
 subplot(233); 
-hh = imagesc(pa,qa,real(AT'));
+hh = imagesc(trunc_X_ax, trunc_Y_ax,real(AT'));
 h2 = get(hh,'Parent');
 set(h2,'YDir','Normal');
 axis equal tight;
@@ -245,20 +250,22 @@ title("TRUNCATED FFT2");
 
 %Time for the inverse fft again with built-in functions (ifft2):
 
-A = zeros(Nx,Ny); %making the fft all zeroes
-A(np1:np2, nq1:nq2) = AT; %everything outside tuncated part is zeros
+A = zeros(grid256X,grid256Y); % making the fft all zeroes
+A(first_horiz_point:last_horiz_point, first_vert_point:last_vert_point) = AT; 
+%everything outside tuncated part is zeros; inside it is simply AT.
 
 
-UCT = real(ifft2(ifftshift(A))) * (Nx * Ny); %unit cell from truncated fft
+UCT = real(ifft2(ifftshift(A))) * (grid256X * grid256Y); 
+% unit cell from truncated fft
 % we undo shifting and scaling
 subplot(233); 
-hh = imagesc(xa,ya,real(UCT'));
+hh = imagesc(X_px_position, Y_px_position,real(UCT'));
 h2 = get(hh,'Parent');
 set(h2,'YDir','Normal');
 axis equal tight;
 colorbar;
 title("TRUNCATED UNIT CELL");
-% blurry because we used only 7 x 7 NP NQ
+% blurry because we used only 7 x 7 hor7grab vert7grab
 
 % All done with the fast way!
 
@@ -267,47 +274,40 @@ title("TRUNCATED UNIT CELL");
 
 %%% Doing it the slow way:
 % Calculate grating vector expansion:
-KX = 2 * pi * pa / a; % Seven values
-% Remembering that:
-% a = 1; % lattice spacing of 1 physical width and height of 1
-% and pa comes from:
-%AT = A(np1:np2, nq1:nq2); % A truncated FFT
-%pa = [-floor(NP/2): floor(NP/2)]; % new axis for the truncated fft (7 values)
+circ_reduced_canvX = 2 * pi * trunc_X_ax / unitary_canvas; % Seven values
+
 % So from side to side we will cover the entire circle.
 
-KY = 2 * pi * qa / a;
+circ_reduced_canvY = 2 * pi * trunc_Y_ax / unitary_canvas;
 % Same for top to bottom
 
-[KY, KX] = meshgrid(KY, KX); % Seven values 49 values
+[circ_reduced_canvY, circ_reduced_canvX] = meshgrid(circ_reduced_canvY, circ_reduced_canvX); % Seven values 49 values
 
-%  Let's start with the whole 256 x 256 Nx, Ny from the beginning
+%  Let's start with the whole 256 x 256 grid256X, grid256Y from the beginning...
 
-UCT = zeros(Nx, Ny); % new truncated unit cell (unit cell is the triangle)
+UCT = zeros(grid256X, grid256Y); % new truncated unit cell (unit cell is the triangle)
 % UCT is 256 x 256
 
-for nq = 1:NQ %NP = NQ = 7 so it is for 1:7
-  for np = 1:NP % for 1:7
+for vert_1_to_7_in = 1:vert7grab %hor7grab = vert7grab = 7 so it is for loop from 1 to 7
+  for horiz_1_to_7_in = 1:hor7grab % for 1 to 7 also
     % Calculate planar grating:
     % The actual values of the triangle don't even come into play, only...
     % the position of the pixels in X and Y
-    % Each value of the [7 x 7] KX matrix (and KY) scalar multiply all values of X and Y
+
     
-    G = exp(1i * (KX(np, nq) * X + KY(np, nq) * Y));
+    G = exp(1i * (circ_reduced_canvX(horiz_1_to_7_in, vert_1_to_7_in) * X 
+                + circ_reduced_canvY(horiz_1_to_7_in, vert_1_to_7_in) * Y));
     
-    % KX = 2 * pi * pa / a is [7 x 7] (same as KY)
-    % This is the twiddle (?) of this 2DFT
-    % pa and qa -3  -2  -1   0   1   2   3 axis TA
-    % a is 1 - the physical width
-    % [Y,X] =  meshgrid(ya,xa) = 256 x 256 corresponding to point positions.
+
+    % [Y,X] =  meshgrid(Y_px_position,X_px_position) = 256 x 256 corresponding to point positions.
     % X is [256 x 256] and Y is also [256 x 256].
-    % xa = [0: Nx - 1] * dx Horiz pos. of each point
-    % ya = Vert pos. of each point 256 = xa
     
     % G is [256 x 256]
     
     %ADDING the Planar Grating to reconstruct cell triangle:
     
-    UCT = UCT + AT(np, nq) * G; % we update the 256 x 256 matrix 
+    UCT = UCT + AT(horiz_1_to_7_in, vert_1_to_7_in) * G; 
+    % we update the 256 x 256 matrix 
     % AT is 7 x 7 matrix of complex numbers  and np nq the indices 1:7
     % Noticing that AT is just the core of A, which is calculated above 
     % with fft2 in-built function!!!!
@@ -316,7 +316,7 @@ for nq = 1:NQ %NP = NQ = 7 so it is for 1:7
 
     %SHOWING TRUNCATED FFT:
     subplot(234);
-    hh = imagesc(pa,qa,real(AT')); % only real part!
+    hh = imagesc(trunc_X_ax,trunc_Y_ax,real(AT')); % only real part!
     %pa and qa are 7 axis points
     h2 = get(hh, 'Parent');
     set(h2, 'YDir','normal');
@@ -324,25 +324,25 @@ for nq = 1:NQ %NP = NQ = 7 so it is for 1:7
     colorbar;
     title('TRUNCATED FFT2');
     hold on;
-    x = pa(np) - 0.5 + [0 1 1 0 0]; %creating box around cells
-    y = qa(nq) - 0.5 + [0 0 1 1 0];
+    x = trunc_X_ax(horiz_1_to_7_in) - 0.5 + [0 1 1 0 0]; %creating box around cells
+    y = trunc_Y_ax(vert_1_to_7_in) - 0.5 + [0 0 1 1 0];
     line(x,y, 'Color','k','LineWidth',2);
     hold off;
     
     % Show planar grating:
     subplot(235);
-    hh = imagesc(xa,ya,real(G')); % only real part!
-    % xa and ya are 256-long vectors, and G is 256x256
+    hh = imagesc(X_px_position,Y_px_position,real(G')); % only real part!
+    % X_px_position and Y_px_position are 256-long vectors, and G is 256x256
     h2 = get(hh, 'Parent');
     set(h2, 'YDir','normal');
     axis equal tight;
     colorbar;
-    title(['P = ' num2str(pa(np)) ', Q = ' ...
-                  num2str(qa(nq))]);
+    title(['P = ' num2str(trunc_X_ax(horiz_1_to_7_in)) ', Q = ' ...
+                  num2str(trunc_Y_ax(vert_1_to_7_in))]);
                   
     % Showing reconstructed cell:
     subplot(236);
-    hh = imagesc(xa,ya,ifftshift(real(UCT'))); % only real part!
+    hh = imagesc(X_px_position,Y_px_position,ifftshift(real(UCT'))); % only real part!
     h2 = get(hh, 'Parent');
     set(h2, 'YDir','normal');
     axis equal tight;
@@ -357,7 +357,6 @@ for nq = 1:NQ %NP = NQ = 7 so it is for 1:7
     end
 end
 \
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Work in progress (2 DFT):
