@@ -1,3 +1,75 @@
+% From http://rinterested.github.io/statistics/fourier.html and
+% http://stackoverflow.com/a/43196792/4089351
+% and http://stackoverflow.com/a/43197349/4089351
+% circ.png can be found here: https://drive.google.com/file/d/0Bwl-HpVJ_5PeV01SNFJ6LUpGams/view?usp=sharing
+
+Im = imread('circ.png');
+pkg load image
+
+
+Im = rgb2gray(Im);
+
+
+A = fft2(double(Im));
+
+% ImageJ’s X and Y positions are 0-based whereas Matlab’s indexing is 1-based.
+% Incrementing ImageJ’s X position corresponds to incrementing the column index in Matlab, 
+% and incrementing ImageJ’s Y position corresponds to incrementing the row index in Matlab, 
+% so that an (X,Y) coordinate pair in ImageJ will be found at index (Y+1,X+1) in Matlab.
+% ImageJ displays the image with the 0 frequency component in the middle of the image, 
+% so measurements are effectively made on the equivalent of fftshift(Im)
+% ImageJ scales the 0-255 grayscale values to floating point values in the 0.0-1.0 range 
+% (i.e. scaling all values by dividing by 255)
+
+% Correspondence to ImageJ measurement at X = 191, Y = 100:
+
+A = fft2(double(Im) / 255);
+Ashifted = fftshift(A);
+Ashifted(101,192) % Notice the swapping of X and Y, plus the increase by 1 of both.
+
+i = 101;
+j = 192;
+
+center = size(A) / 2 + 1;
+dx = (j - center(2)) / size(A,2);
+dy = (center(1) - i - 1) / size(A,1);
+
+direction = (atan2(dy, dx))
+dir_degrees = direction * (360 / (2*pi)) 
+frequency = 1 /sqrt(dx*dx + dy*dy)
+
+%1	0	   106	   106	106	    191	100	    3.735	    23.199
+%2	0	 4.628	 4.628	4.628	  191	100	 1	0.000	     0.000
+%3	0	19.125	19.125	19.125	191	100	 2	0.000	     0.000
+% Theta is              23.199 degrees
+% The frequency r is    3.735  pixels/cycle
+
+
+subplot(131);
+h = imshow(Im);
+h2 = get(h,'Parent');
+set(h2,'YDir','Normal');
+axis equal tight;
+title("Circle");
+
+subplot(132);
+h = imshow(abs(fftshift(A)),[24 100]);
+h2 = get(h,'Parent');
+set(h2,'YDir','Normal');
+axis equal tight;
+title("2D FFT Magnitude");
+
+subplot(133);
+h = imshow(angle(fftshift(A)),[-pi pi]);
+h2 = get(h,'Parent');
+set(h2,'YDir','Normal');
+axis equal tight;
+title("2D FFT Phase");
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % http://www.dspguide.com/ch8/4.htm
 % https://www.researchgate.net/post/Can_someone_please_provide_me_some_MATLAB_code_for_image_transforms_2D_DFT
 
