@@ -1,4 +1,5 @@
 # fROM https://youtu.be/XLNsl1Da5MA
+# This is an exmple of regression trees and plotting applied to the Iris dataset with a so-so plot at the end.
 
 require(rpart)
 g = runif(nrow(iris))
