@@ -1,0 +1,42 @@
+# http://stats.stackexchange.com/a/68397/67822
+
+par(mfrow=c(2,2))
+
+plot.new()
+
+
+mu=2.5
+sigma = 1
+
+mtext("Relationship Normal Lognormal", side = 3, line = -5, outer = TRUE,
+      cex=1.5)
+
+par(mar=c(1,0,6,2))
+plot(1, type="n", xlab="", ylab="", xlim=c(0, 50), ylim=c(0, 0.045), bty="n",
+     cex.axis=.7, tck=-.01)
+df1 <- data.frame(xval = exp(seq(from = -1, to = 5, by = 0.1)), 
+yval = (dlnorm(exp(seq(from = -1, to = 5, by = 0.1)),
+               mu + .5 * sigma, sqrt(sigma))))
+with(df1, lines(xval, yval, lwd = 2, col="darkblue"))
+legend(40,0.03,legend="lognorm",
+       border="", bty="n",cex=0.8)
+
+par(mar=c(3,2,2,2))
+plot(1, type="n", xlab="", ylab="", xlim=c(0, .5), ylim=c(5, -1), bty="n",
+     cex.axis=.7, tck=-.01)
+df2 <- data.frame(yval = seq(from = 5, to = -1, by = - 0.1), 
+        xval = (dnorm(seq(from = 5, to = -1, by = -0.1), mu, sigma)))
+with(df2, lines(xval, yval, lwd = 2, col="darkblue"))
+abline(v=0)
+legend(.3,-1,legend="Norm",
+       border="", bty="n",cex=0.8)
+
+
+par(mar=c(3,0,2,2))
+plot(1, type="n", xlab="", ylab="", xlim=c(0, 50), ylim=c(5, -1), bty="n",
+     cex.axis=.7, tck=.01)
+df2 <- data.frame(yval = seq(from = 5, to = -1, by = -0.1), 
+                  xval = (exp(seq(from = 5, to = -1, by = -0.1))))
+with(df2, lines(xval, yval, lwd = 2, col=2))
+legend(35,-0.5,legend="exp(Y)",
+       border="", bty="n",cex=0.8)
