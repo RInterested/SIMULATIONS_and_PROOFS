@@ -1,0 +1,25 @@
+library(compositions)
+data(SimulatedAmounts)
+
+
+
+x = acomp(sa.groups5, c("Pb","Co","Cd")) 
+y = aplus(sa.groups5, c("Cu","Zn"))
+k = sa.groups5.area 
+
+colors = c(rgb(red=0, green=0, blue=.9, alpha=0.2),
+           rgb(red=0, green=.9, blue=0, alpha=0.2),
+           rgb(red=0.9, green=0, blue=0, alpha=0.2))
+
+plot(y, col = colors[as.numeric(k)], pch = 20)
+
+(fit = lm(idt(y) ~ k + idt(x)))
+ilrInv(coefficients(fit))
+
+colors = c(rgb(red=0, green=0, blue=.9, alpha=0.9),
+           rgb(red=0, green=.9, blue=0, alpha=0.9),
+           rgb(red=0.9, green=0, blue=0, alpha=0.9))
+
+plot(iltInv(predict(mylm)), add = T, col = colors[as.numeric(k)], pch = 19)
+
+summary(manova(mylm))
