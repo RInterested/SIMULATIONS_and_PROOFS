@@ -1,0 +1,45 @@
+#http://data.library.virginia.edu/getting-started-with-negative-binomial-regression-modeling/
+# http://www.statalist.org/forums/forum/general-stata-discussion/general/2339-percentages-versus-proportions-as-explanatory-variables
+set.seed(0)
+
+offsite     = runif(70, 0, 100)
+contractors = round(50 + 4 * offsite + rnorm(70, 50, 30))
+
+summary(offsite)
+summary(contractors)
+
+plot(offsite, contractors, pch = 20, col = "darkred")
+mean(contractors)
+sd(contractors)
+
+require(MASS)
+fit = glm.nb(contractors ~ offsite)
+summary(fit)
+
+offsite_quad = offsite^2
+
+fit_tr = glm.nb(contractors ~ offsite + offsite_quad)
+
+summary(glm(contractors ~ offsite, poisson))
+
+predicted = predict(fit, data.frame(offsite = seq(min(offsite), 
+                                                  max(offsite), 
+                                    length.out=70)), type="response")
+
+new_x_axis = offsite = seq(min(offsite), max(offsite),length.out=70)
+
+predi_tr = predict(fit_tr, list(offsite = new_x_axis, 
+                        offsite_quad = new_x_axis^2),
+                   type = "response")
+
+
+sd(predicted)
+lines(seq(min(offsite), max(offsite), length.out=70), predicted, lwd=2,
+      col = "tan2")
+lines(seq(min(offsite), max(offsite), length.out=70), predi_tr, lwd=2,
+      col = "brown")
+
+
+cor(offsite, contractors)
+
+
