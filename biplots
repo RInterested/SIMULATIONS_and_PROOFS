@@ -1,0 +1,137 @@
+# code for https://stats.stackexchange.com/a/276746/67822
+
+X = as.matrix(iris[,1:3])             # Three first variables of Iris dataset
+CEN = scale(X, center = T, scale = T) # Centering and scaling the data
+
+# EIGENVECTORS:
+evecs = eigen(cor(CEN))$vectors       # Using eigen() method
+sing  = svd(CEN)                      # PCA with SVD...
+evecs = sing$v                        # ... yields these eigenvectors
+PCA = prcomp(CEN)                     # Confirming with prcomp()
+evecs = PCA$rotation                  # ... identical eigenvectors
+
+# EIGENVALUES:
+evals = eigen(cor(CEN))$values        # Using the eigen() method
+evals = sing$d^2 / (nrow(X) - 1)      # and SVD - it's sing.values^2 / n - 1
+evals = PCA$sdev^2                    # with prcomp() (needs squaring)
+
+# SCORES:
+scr = sing$u %*% diag(sing$d)         # with SVD
+scr = PCA$x                           # with prcomp()
+scr = CEN %*% PCA$rotation            # "Manually" [data] [eigvecs]
+
+# LOADINGS:
+
+loaded = evecs %*% diag(PCA$sdev)     # [E-vectors] [sqrt(E-values)]
+
+# CONTRUCTING BIPLOT MANUALLY:
+
+par(mfrow = c(1,2)); par(mar=c(1.2,1.2,1.2,1.2))
+
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01) # R biplot
+# R biplot with overlapping (reproduced) arrows in blue completely covering red arrows:
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01) 
+arrows(0, 0,
+       cor(X[,1], scr[,1]) * 0.8 * sqrt(nrow(X) - 1), 
+       cor(X[,1], scr[,2]) * 0.8 * sqrt(nrow(X) - 1), 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+arrows(0, 0,
+       cor(X[,2], scr[,1]) * 0.8 * sqrt(nrow(X) - 1), 
+       cor(X[,2], scr[,2]) * 0.8 * sqrt(nrow(X) - 1), 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+arrows(0, 0,
+       cor(X[,3], scr[,1]) * 0.8 * sqrt(nrow(X) - 1), 
+       cor(X[,3], scr[,2]) * 0.8 * sqrt(nrow(X) - 1), 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+
+
+
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01) # R biplot
+# R biplot with overlapping (reproduced) arrows in blue completely covering red arrows:
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01) 
+arrows(0, 0,
+       (loaded)[1,1] * 0.8 * sqrt(nrow(X) - 1), 
+       (loaded)[1,2] * 0.8 * sqrt(nrow(X) - 1), 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+arrows(0, 0,
+       (loaded)[2,1] * 0.8 * sqrt(nrow(X) - 1), 
+       (loaded)[2,2] * 0.8 * sqrt(nrow(X) - 1), 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+arrows(0, 0,
+       (loaded)[3,1] * 0.8 * sqrt(nrow(X) - 1), 
+       (loaded)[3,2] * 0.8 * sqrt(nrow(X) - 1), 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01) # R biplot
+# R biplot with overlapping (reproduced) arrows in blue completely covering red arrows:
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01) 
+arrows(0, 0,
+       (sing$v %*% diag(sing$d))[1,1] * 0.8, 
+       (sing$v %*% diag(sing$d))[1,2] * 0.8, 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+arrows(0, 0,
+       (sing$v %*% diag(sing$d))[2,1] * 0.8, 
+       (sing$v %*% diag(sing$d))[2,2] * 0.8, 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+arrows(0, 0,
+       (sing$v %*% diag(sing$d))[3,1] * 0.8, 
+       (sing$v %*% diag(sing$d))[3,2] * 0.8, 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+
+
+
+
+
+
+
+
+
+
+
+
+par(mar=c(0,2,0,0))
+
+biplot(PCA, cex = 0.6, cex.axis = .6, ann = F, tck=-0.01)
+title(main = "Built-in biplot R function", 
+      line = 2)
+mtext(side = 1, text = "PC 1", line = .3, cex =.7)
+mtext(side = 4, text = "PC 2", line = .3, cex =.7)
+
+par(mar=c(3.8,3,3.8,1))
+
+plot(sing$u[,1],
+     sing$u[,2],
+     cex = 0.2, cex.axis = .6, pch=20, tck = -0.01, 
+     xlim=c(-.21,.21),
+     main = "Manual Biplot", xlab="PC 1", ylab = "PC 2")
+text(sing$u[,1],
+     sing$u[,2],
+     rownames(as.data.frame(X)), pos= 3, cex = 0.5)
+
+arrows(0, 0,
+       (sing$v %*% diag(sing$d))[1,1] * 0.8 * 1/50, 
+       (sing$v %*% diag(sing$d))[1,2] * 0.8 * 1/50, 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+
+text((sing$v %*% diag(sing$d))[1,1] * 1/50, 
+      (sing$v %*% diag(sing$d))[1,2] * 1/50, 
+     "Sp.Lg", pos = 2, col = 4)
+
+arrows(0, 0,
+       (sing$v %*% diag(sing$d))[2,1] * 0.8 * 1/50, 
+       (sing$v %*% diag(sing$d))[2,2] * 0.8 * 1/50, 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+
+text((sing$v %*% diag(sing$d))[2,1] * 1/50, 
+     (sing$v %*% diag(sing$d))[2,2] * 1/50, 
+     "Sp.Wth", pos = 4, col = 4)
+
+arrows(0, 0,
+       (sing$v %*% diag(sing$d))[3,1] * 0.8 * 1/50, 
+       (sing$v %*% diag(sing$d))[3,2] * 0.8 * 1/50, 
+       lwd = 1, angle = 30, length = 0.1, col = 4)
+
+text((sing$v %*% diag(sing$d))[3,1] * 1/50, 
+     (sing$v %*% diag(sing$d))[3,2] * 1/50, 
+     "Pt.Lg", pos = 2, col = 4)
+
