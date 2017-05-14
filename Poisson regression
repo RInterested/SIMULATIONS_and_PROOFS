@@ -1,0 +1,51 @@
+# For this post: https://stats.stackexchange.com/a/279554/67822
+
+set.seed(0)
+par(mfrow =c(1,1))
+sam = 1000
+lambda = c(1,4,7,10,13)
+x = c(rep(lambda[1], sam), rep(lambda[2], sam), rep(lambda[3], sam), 
+      rep(lambda[4], sam), rep(lambda[5],sam))
+peixos = rpois(length(x), x)
+
+plot(peixos ~ jitter(x,.2), 
+     col = rgb(1,0,0,.05), pch = 19, cex =.5, bg = 0,
+     xlab = "No. boats", ylab = "Fish", main = "No. of fish v No. of boats",
+     cex.main=.9, cex.lab =.8, ylim = c(0,25)) 
+lines(c(1,13), c(1,13), col = 2)
+
+# The Poisson is a discrete distribution; hence a plot like:
+
+plot(jitter(peixos,3) ~ jitter(x,.2), 
+     col = rgb(1,0,0,.05), pch = 19, cex =.5, bg = 0,
+     xlab = "No. boats", ylab = "Fish", main = "No. of fish v No. of boats",
+     cex.main=.9, cex.lab =.8, ylim = c(0,25)) 
+lines(c(1,13), c(1,13), col = 2)
+
+#... would not be appropriate.
+
+
+fit <- glm(peixos ~ x, "poisson")
+exp(unique(predict(fit)))
+plot(fit, which = 1)
+
+fit = glm(peixos ~ x, family = poisson(link = identity))
+unique(predict(fit))
+plot(fit, which = 1)
+
+hist(peixos[1:sam], border = F,  col = rgb(1,0,0,.9), 
+     main = expression(paste(lambda, " = 1")), xlab="", ylab="",
+     breaks = 10, xlim = c(0,5))
+
+hist(peixos[(sam + 1):(2 * sam)], border = F,  col = rgb(1,0,0,.9), 
+     main = expression(paste(lambda, " = 4")), xlab="", ylab="")
+
+hist(peixos[((2*sam) + 1):(3 * sam)], border = F,  col = rgb(1,0,0,.9), 
+     main = expression(paste(lambda, " = 7")), xlab="", ylab="")
+
+hist(peixos[((3*sam) + 1):(4 * sam)], border = F,  col = rgb(1,0,0,.9), 
+     main = expression(paste(lambda, " = 10")), xlab="", ylab="")
+
+hist(peixos[(4*sam+1):(5*sam)], border = F,  col = rgb(1,0,0,.9), 
+     main = expression(paste(lambda, " = 13")), xlab="", ylab="" )
+mtext("Histograms", outer = T)
