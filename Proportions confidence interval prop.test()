@@ -1,0 +1,43 @@
+p1=0.02
+p2=0.01
+n1=10000
+n2=1000
+sig.level=0.05
+
+prop.test(x = c(p1*n1, p2*n2),
+          n = c(n1, n2),
+          conf.level = 1 - sig.level,
+          correct = F)
+(CI = p1 - p2 + c(-1,1) * qnorm(1 - sig.level/2) * sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2))
+
+
+prop.test(x = c(p1*n1, p2*n2), n = c(n1, n2), alternative = "greater", conf.level = 1 - sig.level, correct = F)
+
+(CI = c((p1 - p2) - qnorm(conf.level) * sqrt(p1 * (1 - p1)/n1 + p2 * (1 - p2)/n2), 1))
+
+
+
+x = c(p1*n1, p2*n2)
+n = c(n1, n2)
+OK <- complete.cases(x, n)    #TRUE TRUE
+x <- x[OK]  # 200
+n <- n[OK]  # 10000 1000
+k <- length(x)  # 2
+l <- length(x)
+p = NULL
+alternative = "greater"
+sig.level=0.05
+conf.level = 1 - sig.level
+
+
+
+
+NVAL <- p          	#NULL
+CINT <- NULL
+YATES <- 0
+
+
+ESTIMATE <- setNames(x/n, paste("prop", 1L:l)[OK])
+DELTA <- ESTIMATE[1L] - ESTIMATE[2L]
+WIDTH <- qnorm(conf.level) * sqrt(sum(ESTIMATE * (1 - ESTIMATE)/n))
+(CINT <- c(max(DELTA - WIDTH, -1), 1))
