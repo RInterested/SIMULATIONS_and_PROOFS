@@ -1,0 +1,79 @@
+# Reference: https://onlinecourses.science.psu.edu/stat414/node/118
+
+require(MASS)
+set.seed(0)
+mu_x = 0
+mu_y = 0
+sigma_2_x = 0.25
+sigma_2_y = 0.25
+cov = 0.20 # covariance
+rho = cov/sqrt(sigma_2_x * sigma_2_y)
+
+m = mvrnorm(1e4, c(mu_x,mu_y), matrix(c(sigma_2_x, cov, cov, sigma_2_y), 2,2))
+plot(m[,1], m[,2], pch=19, cex = .2, col=rgb(.9,.3,.2, .2),
+     xlab = "X", ylab="Y", main="Bivariate normal")
+x = seq(min(m[,1]), max(m[,2]), 0.001)
+mean_Y_given_x = mu_y + rho * 
+  sqrt(sigma_2_y/sigma_2_x) * (x - mu_x)
+lines(x, mean_Y_given_x)
+abline(h=0)
+abline(v=0)
+sigma_2_Y_given_x = sigma_2_y * (1 - rho^2)
+
+modl = lm(m[,2] ~ m[,1])
+
+
+x = -1
+mean_Y_given_x = mu_y + rho * 
+  sqrt(sigma_2_y/sigma_2_x) * (x - mu_x)
+c = .5
+df1 <- data.frame(yval = seq(
+  from = -1.5 + mean_Y_given_x, 
+  to = 1.5 + mean_Y_given_x, 
+  by = 0.1), 
+  xval = (dnorm(seq(from = -1.5, to = 1.5, by = 0.1), 0, sqrt(sigma_2_Y_given_x))*c))
+
+with(df1, lines(xval + x, yval, lwd = 1, col="darkblue"))
+abline(v = x)
+abline(h = mean_Y_given_x)
+
+# Pr [(X - X') * (Y - Y')] > 0
+# Since x = -1,
+# X - X' will be negative if -1 < x' 
+
+pnorm(-1, mu_x, sqrt(sigma_2_x), F)
+
+# Since x = -1 conditions the mean of Y to be
+mean_Y_given_x
+
+# And there is a probability of 98% of that the mean_Y'_given_x' > -.8
+# If we focus just on the mean, Y - Y' would also be negative.
+
+# The opposite is true for
+
+plot(m[,1], m[,2], pch=19, cex = .2, col=rgb(.9,.3,.2, .2),
+     xlab = "X", ylab="Y", main="Bivariate normal")
+x = seq(min(m[,1]), max(m[,2]), 0.001)
+mean_Y_given_x = mu_y + rho * 
+  sqrt(sigma_2_y/sigma_2_x) * (x - mu_x)
+lines(x, mean_Y_given_x)
+abline(h=0)
+abline(v=0)
+sigma_2_Y_given_x = sigma_2_y * (1 - rho^2)
+
+modl = lm(m[,2] ~ m[,1])
+
+
+x = 1
+mean_Y_given_x = mu_y + rho * 
+  sqrt(sigma_2_y/sigma_2_x) * (x - mu_x)
+c = .5
+df1 <- data.frame(yval = seq(
+  from = -1.5 + mean_Y_given_x, 
+  to = 1.5 + mean_Y_given_x, 
+  by = 0.1), 
+  xval = (dnorm(seq(from = -1.5, to = 1.5, by = 0.1), 0, sqrt(sigma_2_Y_given_x))*c))
+
+with(df1, lines(xval + x, yval, lwd = 1, col="darkblue"))
+abline(v = x)
+abline(h = mean_Y_given_x)
