@@ -1,6 +1,8 @@
 # Apropos of this question: https://math.stackexchange.com/q/2626500/152225
+# Thanks to this post: https://stackoverflow.com/a/41688820/4089351
 
-# Number of simulations:
+
+# Number of simulations (1 million takes quite some time to run):
 nsim = 1e6
 
 # METHOD 1: 
@@ -60,3 +62,6 @@ fun = function(){
 # We use the formula:
 m2 = replicate(nsim,fun())
 ncol(unique(m2, MARGIN=2))
+
+
+# In both cases the result is 7188.
