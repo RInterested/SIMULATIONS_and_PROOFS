@@ -1,0 +1,62 @@
+# Apropos of this question: https://math.stackexchange.com/q/2626500/152225
+
+# Number of simulations:
+nsim = 1e6
+
+# METHOD 1: 
+
+# Initiating an empty matrix with each column representing a possible arrangement of the pencils:
+
+m = matrix(0, 15, nsim)
+
+# A double loop: the outer loop to move from one sample to the next along the simulations in the inner loop:
+
+for (j in 1:nsim){
+      pencils = c(rep(1,5),rep(2,5),rep(3,5))  # Blue is 1; Black is 2; Red is 3
+      sam <- numeric(15)               # Starting an empty vector for simulation j
+      sam[1] = sample(pencils, 1)      # We sample one of the pencils
+      
+    for (i in 2:length(pencils)){
+        # We redifine the pencils available by taking out the first instance [1] of the color pencil that just showed up at i - 1:
+      pencils <- pencils[ - which( pencils == sam[i - 1] )[1] ] 
+        # Regardless of how many are left after the prior line for each color, we need to sample a different color from i - 1:
+      remaining = pencils[ pencils != sam[i-1] ]
+        # The following line is to sample one of the remaining colors:
+      x <- ifelse(length(remaining) > 1, sample(remaining, 1), remaining)
+      sam[ i ] <- x
+ }
+m[,j] <- sam
+}
+
+# There are NA's at the end of some experiments when two colors have been exhausted, forcing two pencils of the same color in the last
+# two entries... So we remove them:
+
+m = m[,colMeans(is.na(m)) == 0] 
+
+# This is the number of unique arrangements:
+ncol(unique(m, MARGIN=2))
+
+
+# METHOD 2
+
+# We define the pencils like in the prior method:
+
+pencils = c(rep(1,5),rep(2,5),rep(3,5))
+fun = function(){
+
+# We sample the pencils...
+      sam <- sample(pencils)
+# And remove the first element from the sample
+      sam.lag <- c(NA, sam[1:length(sam)-1])
+      # Now we get rid of the NA and compare the sample to the sample offset by 1 entry to make sure that there are no 
+      # consecutive repeat colors
+          while(sum(sam == sam.lag, na.rm=T) > 0){
+            sam <- sample(pencils)
+            sam.lag <- c(NA, sam[1:length(sam)-1])
+          }
+    sam
+}
+
+# We use the formula:
+m2 = replicate(nsim,fun())
+ncol(unique(m2, MARGIN=2))
