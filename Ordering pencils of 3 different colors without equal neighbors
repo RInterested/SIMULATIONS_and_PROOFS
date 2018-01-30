@@ -65,3 +65,83 @@ ncol(unique(m2, MARGIN=2))
 
 
 # In both cases the result is 7188.
+
+# Here is another related question: https://math.stackexchange.com/a/2570350/152225
+
+# The code for it would be:
+
+
+# Apropos of this question: https://math.stackexchange.com/q/2626500/152225
+# Thanks to this post: https://stackoverflow.com/a/41688820/4089351
+
+
+# Number of simulations (1 million takes quite some time to run):
+nsim = 10000
+
+# METHOD 1: 
+
+# Initiating an empty matrix with each column representing a possible arrangement of the pencils:
+
+m = matrix(0, 9, nsim)
+
+# A double loop: the outer loop to move from one sample to the next along the simulations in the inner loop:
+
+for (j in 1:nsim){
+  pencils = c(rep(1,3),rep(2,3),rep(3,3))  # Blue is 1; Black is 2; Red is 3
+  sam <- numeric(9)               # Starting an empty vector for simulation j
+  sam[1] = sample(pencils, 1)      # We sample one of the pencils
+  
+  for (i in 2:length(pencils)){
+    # We redifine the pencils available by taking out the first instance [1] of the color pencil that just showed up at i - 1:
+    pencils <- pencils[ - which( pencils == sam[i - 1] )[1] ] 
+    # Regardless of how many are left after the prior line for each color, we need to sample a different color from i - 1:
+    remaining = pencils[ pencils != sam[i-1] ]
+    # The following line is to sample one of the remaining colors:
+    x <- ifelse(length(remaining) > 1, sample(remaining, 1), remaining)
+    sam[ i ] <- x
+  }
+  m[,j] <- sam
+}
+
+# There are NA's at the end of some experiments when two colors have been exhausted, forcing two pencils of the same color in the last
+# two entries... So we remove them:
+
+m = m[,colMeans(is.na(m)) == 0] 
+
+# This is the number of unique arrangements:
+ncol(unique(m, MARGIN=2))
+
+
+# METHOD 2
+
+# We define the pencils like in the prior method:
+
+pencils = c(rep(1,3),rep(2,3),rep(3,3))
+fun = function(){
+  
+  # We sample the pencils...
+  sam <- sample(pencils)
+  # And remove the first element from the sample
+  sam.lag <- c(NA, sam[1:length(sam)-1])
+  # Now we get rid of the NA and compare the sample to the sample offset by 1 entry to make sure that there are no 
+  # consecutive repeat colors
+  while(sum(sam == sam.lag, na.rm=T) > 0){
+    sam <- sample(pencils)
+    sam.lag <- c(NA, sam[1:length(sam)-1])
+  }
+  sam
+}
+
+# We use the formula:
+m2 = replicate(nsim,fun())
+ncol(unique(m2, MARGIN=2))
+
+
+# In both cases the result is 174.
+
+
+# This is the same result as in the analytical answer:
+
+# Just plug this into the entry line of Wolfram Alpha:
+
+9!/(3!3!3!) - (3 choose 1)\frac{8!}{3!3!} + (3 choose 1)\frac{7!}{3!3!} + (3 choose 2)\frac{7!}{3!} - (3 choose 1)(2 choose 1)6!/3! - 6! + (3 choose 2)\frac{5!}{3!} + (3 choose 1)5! -(3 choose 2)4!+3!
