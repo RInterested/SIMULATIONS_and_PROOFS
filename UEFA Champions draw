@@ -1,7 +1,7 @@
-teams = 1:8
-names(teams) = c("RM", "BCN", "SEV", "JUV", "ROM", "MC", "LIV", "BYN")
-replicate(7, unlist(split(sample(teams), rep(1:(length(teams)/2), each=2))))
+teams = c("RM", "BCN", "SEV", "JUV", "ROM", "MC", "LIV", "BYN")
+replicate(10, unlist(split(sample(teams), rep(1:(length(teams)/2), each=2))))
 nsim = 1e6
-u = ncol(unique(replicate(nsim, unlist(split(sample(teams), rep(1:(length(teams)/2), each=2)))), MARGIN = 2))
-u / (factorial(4)) # Because liting of pairings does not matter we divide by 4! to get all possible draws: 1680
-u / (factorial(4) * 2^4) # If field advantage does not matter: 105
+u = unique(replicate(nsim, unlist(split(sample(teams), rep(1:(length(teams)/2), each=2)))), MARGIN = 2)
+w = ncol(u)
+w / (factorial(4)) # Because liting of pairings does not matter we divide by 4! to get all possible draws. [1] 1680
+w / (factorial(4) * 2^4) # If field advantage does not matter. [1] 105
