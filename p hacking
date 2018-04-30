@@ -1,0 +1,20 @@
+set.seed(3141592)
+firsthackingop <- 0
+for(i in 1:1e5){
+hackingwait <- 1
+  repeat{
+  x=rnorm(100, 0, 1)
+  if(t.test(x, mu=0)$p.value > 0.05){hackingwait=hackingwait+1}else{break}
+}
+firsthackingop[i] <- hackingwait
+}
+mean(firsthackingop)
+median(firsthackingop)
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+Mode(firsthackingop)
+hist(firsthackingop, freq = T, main = "No. t-tests before Type I Error",
+          xlim=c(0,100), col = rgb(.2,.2,.8,.5), border = F,
+          cex.axis=.75, cex.main=.9, xlab="", ylab="")
