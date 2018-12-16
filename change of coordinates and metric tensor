@@ -1,0 +1,41 @@
+(e1=matrix(c(1,0),2))
+(e2=matrix(c(0,1),2))
+(e1tilde=2*e1 + 1*e2)
+(e2tilde=-1/2*e1 + 1/4*e2)
+
+
+
+(Fwd = matrix(rbind(e1tilde, e2tilde),2))
+(Bwd = solve(Fwd))
+
+# If the basis vectors change at every point in time we would use the Jacobian
+# In the example above Fwd = 
+# del e1tilde / del e1  del e2tilde / del e1
+# del e1tilde / del e2  del e2tilde / del e2
+
+# Change of components under basis change - vector component are contravariant:
+
+(v_in_e=as.matrix(c(1,1),2))
+(v_in_etilde = Bwd %*% v_in_e)
+library(MASS)
+fractions(v_in_etilde)
+
+# Linear transformation:
+
+L_in_e = matrix(c(1/2,0,0,2),2)
+(L_of_v = L_in_e %*% v_in_e)
+
+fractions((L_in_etilde = Bwd %*% (L_in_e %*% Fwd)))
+
+# This last result is reproduced here: https://youtu.be/SSSGA6ohkfw?t=290
+
+fractions(L_in_etilde %*% v_in_etilde)
+
+# Getting the metric tensor in the new coord. system:
+
+MT = fractions(t(Fwd) %*% Fwd)
+
+# Length in old coor:
+
+t(v_in_e) %*% (diag(2) %*% v_in_e)
+t(v_in_etilde) %*% (MT %*% v_in_etilde)
