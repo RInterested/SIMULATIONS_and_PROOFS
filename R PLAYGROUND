@@ -1,0 +1,4 @@
+head(mtcars)
+reg = lm(mpg ~ wt, mtcars)
+plot(mtcars$mpg, mtcars$wt)
+abline(reg, col="red")
