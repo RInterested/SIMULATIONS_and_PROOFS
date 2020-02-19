@@ -1,0 +1,67 @@
+x = linspace(-1,1);
+y = linspace(-1,1);
+[x,y] = meshgrid(x,y);
+z = x.^3 + y.^2;
+S = [x;y;z];
+h = surf(x,y,z)
+set(h,'edgecolor','none')
+colormap('gray');
+hold on
+
+f = @(x,y) x.^3 + y.^2;
+
+dfdx = @(x,y) (f(x + eps, y) - f(x - eps, y))/(2 * eps);
+dfdy = @(x,y) (f(x, y + eps) - f(x, y - eps))/(2 * eps);
+
+N = @(x,y) [- dfdx(x,y), - dfdy(x,y), 1];
+
+C = {'k','b','r','g','y','m','c',[.8 .2 .6],[.2,.8,.1],[0.3010 0.7450 0.9330],[0.9290 0.6940 0.1250],[0.8500 0.3250 0.0980]};
+
+for s = 1:11
+start = -5:5;    
+y0 = start(s)/5;
+x0 = 1;
+dx0 = 0;
+dy0 = 0.05;
+step_size = 0.00005;
+eta =  step_size / sqrt(dx0^2 + dy0^2);
+eps = 0.0001;
+max_num_iter = 100000;
+
+x = [[x0, x0 + eta * dx0], zeros(1,max_num_iter - 2)];
+y = [[y0, y0 + eta * dy0], zeros(1,max_num_iter - 2)];
+
+for i = 2:(max_num_iter - 1)
+            xt = x(i);
+            yt = y(i);
+            ft = f(xt,yt);
+            
+            xtm1 = x(i - 1);
+            ytm1 = y(i - 1);
+            ftm1 = f(xtm1,ytm1);
+            
+            xsymp = xt + (xt - xtm1);
+            ysymp = yt + (yt - ytm1);
+            fsymp = ft + (ft - ftm1);
+            
+            df = fsymp - f(xsymp,ysymp);
+            n = N(xt,yt);
+            gamma = df * n(3);
+            
+            xtp1 = xsymp - gamma * n(1);
+            ytp1 = ysymp - gamma * n(2);
+            
+            x(i + 1) = xtp1;
+            y(i + 1) = ytp1;
+end
+
+P = [x; y; f(x,y)];
+
+indices = find(abs(P(1,:)) < 1);
+P = P(:,indices);
+indices = find(abs(P(2,:)) < 1);
+P = P(:,indices);
+
+plot3(P(1,:), P(2,:), P(3,:), '.', 'MarkerSize', 5,'color',C{s})
+
+end
