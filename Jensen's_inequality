@@ -1,6 +1,6 @@
 set.seed(0)
 nsim = 10
-draws = 100
+draws = 10
 m = matrix(,2,nsim)
 
 for (i in 1:nsim){
@@ -15,5 +15,5 @@ wy = w * y
 m[2,i] <- (mean(wy))^2
 }
 
-plot(m[2,], col=5, pch=19, ylim = c(0,0.2))
+plot(m[2,], col=5, pch=19, ylim = c(0,10))
 points(m[1,], col=2, pch=19)
