@@ -15,5 +15,5 @@ wy = w * y
 m[2,i] <- (mean(wy))^2
 }
 
-plot(m[2,], col=5, pch=19, ylim = c(0,10))
+plot(m[2,], col=5, pch=19, ylim = c(0,10), ylab="Payoff", xlab="Simulation")
 points(m[1,], col=2, pch=19)
