@@ -1,0 +1,19 @@
+set.seed(0)
+nsim = 10
+draws = 100
+m = matrix(,2,nsim)
+
+for (i in 1:nsim){
+w = prop.table(runif(draws))
+x = sample(seq(0,10,0.00001), draws)
+y = x^2
+
+wx = w * x
+m[1,i] <- (mean(wx))^2
+
+wy = w * y
+m[2,i] <- (mean(wy))^2
+}
+
+plot(m[2,], col=5, pch=19, ylim = c(0,0.2))
+points(m[1,], col=2, pch=19)
