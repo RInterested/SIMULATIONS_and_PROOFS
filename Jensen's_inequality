@@ -1,18 +1,18 @@
 set.seed(0)
 nsim = 10
-draws = 10
-m = matrix(,2,nsim)
+N = 10 # no. of values to be drawn from the interval [0, 10]
+m = matrix(,2,nsim) # Initializing empty matrix
 
 for (i in 1:nsim){
-w = prop.table(runif(draws))
-x = sample(seq(0,10,0.00001), draws)
-y = x^2
-
-wx = w * x
-m[1,i] <- (mean(wx))^2
-
-wy = w * y
-m[2,i] <- (mean(wy))^2
+  w = prop.table(runif(N)) # Vector of probabilities (w_i)
+  x = sample(seq(0,10,0.00001), N) # Drawing these random values X_1,..., X_N.
+  y = x^2 # f(X_i) or payoff function.
+  
+  wx = w * x # Dot product <w_i, X_i>
+  m[1,i] <- (mean(wx))^2 # Mean squared.
+  
+  wy = w * y # Dot product <w_i, f(X_i)>
+  m[2,i] <- (mean(wy))^2 # Mean of f(X_i) squared.
 }
 
 plot(m[2,], col=5, pch=19, ylim = c(0,10), ylab="Payoff", xlab="Simulation")
