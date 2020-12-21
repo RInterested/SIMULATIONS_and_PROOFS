@@ -27,7 +27,9 @@ data = data.frame(outcome=as.factor(c(rep(0,n*pi0),rep(1,n*pi1))),
                   testA=c(testA_Normals,testA_Sick))
 
 # Generating ROC curves:
-library(pROC)                  
+library('pROC')  
+library('ROCR')
+library('Epi')
 pred <- prediction(data$testA, data$outcome)
 perf <- performance(pred, "tpr", "fpr")
 # performance metrics TPR: True Positive Ratio FPR: False Positive Ratio
