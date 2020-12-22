@@ -29,6 +29,8 @@ UNKNOWN = seq(0,10,0.0001)
 loss <- cost0 * (1 - pnorm(UNKNOWN,3,1)) * pi0 + cost1 * pnorm(UNKNOWN,6,1) * pi1
 Threshold = data.frame(UNKNOWN,loss)[which(loss==min(loss)),]$UNKNOWN
 
+(LOSS = cost0 * (1 - pnorm(Threshold,3,1)) * pi0 + cost1 * pnorm(Threshold,6,1) * pi1)
+
 abline(v=Threshold)
 
 # Data frame with all cases and outcomes:
@@ -36,9 +38,7 @@ data = data.frame(outcome=as.factor(c(rep(0,n*pi0),rep(1,n*pi1))),
                   testA=c(testA_Normals,testA_Sick))
 
 # Generating ROC curves:
-library('pROC')  
-library('ROCR')
-library('Epi')
+
 pred <- prediction(data$testA, data$outcome)
 perf <- performance(pred, "tpr", "fpr")
 # performance metrics TPR: True Positive Ratio FPR: False Positive Ratio
@@ -47,7 +47,7 @@ abline(0, 1, col = "grey")
 auc <- performance(pred, "auc")
 legend("bottomright", 
        c(paste("AUC=",round(as.numeric(auc@y.values), digits = 2)),
-         paste("Loss=",round(Loss,2))), col = c("blue4"), pch = c(3),
+         paste("Loss=",round(LOSS,2))), col = c("blue4"), pch = c(3),
        ) 
 
 # Alternative ROC with "optimal" score:
