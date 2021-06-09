@@ -155,7 +155,7 @@ QQplot <- function (values, mu, sigma, xi=NA, dist){
   pp <- ProbPos(values=values, dist=dist)
   Qpred <- predictQuantile(p=pp$meanRank, mu=mu, sigma=sigma, xi=xi, dist=dist)
   plot(sort(values), Qpred, main="Q-Q plot", ylim=range(values),
-       xlab="Empirical quantile", ylab="Model quantile")
+       xlab="Empirical quantile", ylab="Model quantile", pch=19)
   mtext(paste(dist, " (largest values)"), font=3)
   abline(a=0, b=1, lty=2, col="blue")}
 
@@ -164,6 +164,6 @@ PPplot <- function (values, mu, sigma, xi=NA, dist){
   pp <- ProbPos(values=values, dist=dist)
   Ppred <- predictProbability(y=sort(values), mu=mu, sigma=sigma, xi=xi, dist=dist)
   plot(pp$meanRank, Ppred, main="P-P plot", xlim=c(0,1), ylim=c(0,1),
-       xlab="Empirical probability", ylab="Model probability")
+       xlab="Empirical probability", ylab="Model probability", pch=19)
   mtext(paste(dist, " (largest values)"), font=3)
   abline(a=0, b=1, lty=2, col="blue")}
