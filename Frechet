@@ -134,7 +134,7 @@ cprobplot <- function (values, model, varname="x", alpha=.05, dist){
        ylim=range(ps), axes=FALSE, ann=FALSE)
   title(main=dist, outer=TRUE, line=-1)
   mtext("largest values", font=3)
-  points(pp$value, pp$meanRank, col="black")
+  points(pp$value, pp$meanRank, col="black", pch=19)
   lines(lcl, ps, lty=2, col="red")
   lines(ucl, ps, lty=2, col="red")
   axis(2, at=(seq(0,1, length.out=11)))
