@@ -87,7 +87,7 @@ probplot <- function (values, model, varname="x", alpha=.05, dist){
     plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb, pch=19,
          main=dist, xlab=varname, ylab="Linearized CDF", log="x")}
   else if (dist=="gev") {
-    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
+    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb, pch=19,
          main=dist, xlab=varname, ylab="Linearized CDF")}
   mtext("largest values", font=3)
   lines(predValue, plotposps, col="blue")
@@ -130,7 +130,7 @@ cprobplot <- function (values, model, varname="x", alpha=.05, dist){
   #cumulative probability plot
   oldPar <- par(no.readonly=TRUE)
   par(mar=c(4,4,2,4))
-  plot(predValue, ps, type="l", col="blue", xlim=range(values),
+  plot(predValue, ps, type="l", col="blue", xlim=range(values), pch=19,
        ylim=range(ps), axes=FALSE, ann=FALSE)
   title(main=dist, outer=TRUE, line=-1)
   mtext("largest values", font=3)
