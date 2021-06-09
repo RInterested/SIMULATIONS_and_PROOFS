@@ -81,10 +81,10 @@ probplot <- function (values, model, varname="x", alpha=.05, dist){
   rangeProb <- range(plotposps)
   #probability plot
   if (dist=="gumbel") {
-    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
+    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb, pch=19,
          main=dist, xlab=varname, ylab="Linearized CDF")}
   else if (dist=="frechet") {
-    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
+    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb, pch=19,
          main=dist, xlab=varname, ylab="Linearized CDF", log="x")}
   else if (dist=="gev") {
     plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
