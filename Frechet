@@ -1,0 +1,169 @@
+#all of the following functions are needed for performing
+#the extreme value analysis (for maxima)
+
+#function for calculating probability plot positions
+ProbPos <- function (values, dist){
+  values <- sort(values)
+  n <- length(values)
+  valIndex <- 1:n
+  #mean rank
+  Prob <- sapply(valIndex, function(i,n) i/(n+1), n=n)
+  #plotting position
+  if (dist=="gumbel") {yi <- qlev(Prob)}
+  else if (dist=="frechet") {yi <- qlev(Prob)}
+  #note: shape of GEV is set to 0, which yields a Gumbel distribution
+  else if (dist=="gev") {yi <- qevd(p=Prob, lower.tail=TRUE)}
+  data.frame(value=values, meanRank=Prob, yi)
+}
+
+#function for predicting quantiles
+predictQuantile <- function (p, mu, sigma, xi=NA, dist) {
+  if (dist=="gumbel") {(qlev(p)*sigma + mu)}
+  else if (dist=="frechet") {exp(qlev(p)*sigma + mu)}
+  else if (dist=="gev") {qevd(p=p, loc=mu, scale=sigma, shape=xi,
+                              type="GEV", lower.tail=TRUE)}
+}
+
+#function for predicting cumulative probabilities
+predictProbability <- function (y, mu, xi=NA, sigma, dist) {
+  if (dist=="gumbel") {plev( (y - mu) / sigma)}
+  else if (dist=="frechet") {plev( (log(y) - mu) / sigma)}
+  else if (dist=="gev") {pevd(q=y, loc=mu, scale=sigma, shape=xi,
+                              type="GEV", lower.tail=TRUE)}
+}
+
+#function for predicting quantiles of Frechet distribution
+#including confidence intervals (based on normal-approximation)
+frechetQp <- function (vcov, mu, sigma, p, alpha=.05){
+  Qp <- predictQuantile(p=p, mu=mu, sigma=sigma, dist="frechet")
+  dg.dmu <- 1
+  dg.dsigma <- qlev(p)
+  seQp <- Qp*sqrt(t(c(dg.dmu, dg.dsigma))%*%vcov%*%c(dg.dmu, dg.dsigma))
+  w <- exp((qnorm(1-alpha/2)*seQp) / Qp)
+  c(p=p, Quantile=Qp, std.err=seQp,
+    lcl=Qp/w, ucl=Qp*w )
+}
+
+#function for constructing probability plot
+#including:
+#- ML fit
+#- confidence intervals (based on normal-approximation)
+probplot <- function (values, model, varname="x", alpha=.05, dist){
+  #extract model parameters
+  if (dist=="gumbel") {mu=model$results$par[1];sigma=model$results$par[2];xi=NA}
+  else if (dist=="frechet") {mu=coef(model)[1];sigma=coef(model)[2];xi=NA}
+  else if (dist=="gev") {
+    mu=model$results$par[1]
+    sigma=model$results$par[2]
+    xi=model$results$par[3]}
+  #probability plot positions
+  pp <- ProbPos(values=values, dist=dist)
+  #generate sequence of proportions
+  ps <- seq(0.001 ,.999, length.out=200)
+  #probability plot positions for generated proportions
+  plotposps <- qlev(ps)
+  #predict quantiles for generated proportions
+  predValue <- sapply(ps, predictQuantile, mu=mu, sigma=sigma, xi=xi, dist=dist)
+  #confidence intervals
+  if (dist=="gumbel") {
+    returnPeriod <- 1/(1-ps)
+    ciR <- ci(model, type="return.level", return.period=returnPeriod, alpha=alpha)
+    lcl <- ciR[,1]; ucl <- ciR[,3]}
+  else if (dist=="frechet") {
+    vcMS <- summary(model)$vcov
+    sq <- t(sapply(ps, frechetQp, vcov=vcMS, mu=mu, sigma=sigma, alpha=alpha))
+    lcl <- sq[,4]; ucl <- sq[,5]}
+  else if (dist=="gev") {
+    returnPeriod <- 1/(1-ps)
+    ciR <- ci(model, type="return.level", return.period=returnPeriod, alpha=alpha)
+    lcl <- ciR[,1]; ucl <- ciR[,3]}
+  #determine plot ranges
+  rangeProb <- range(plotposps)
+  #probability plot
+  if (dist=="gumbel") {
+    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
+         main=dist, xlab=varname, ylab="Linearized CDF")}
+  else if (dist=="frechet") {
+    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
+         main=dist, xlab=varname, ylab="Linearized CDF", log="x")}
+  else if (dist=="gev") {
+    plot(pp$value, pp$yi, type="p", xlim=range(values), ylim=rangeProb,
+         main=dist, xlab=varname, ylab="Linearized CDF")}
+  mtext("largest values", font=3)
+  lines(predValue, plotposps, col="blue")
+  lines(lcl, plotposps, lty=2, col="red")
+  lines(ucl, plotposps, lty=2, col="red")
+}
+
+#function for constructing cumulative probability plot
+#including:
+#- ML fit
+#- confidence intervals (based on normal-approximation)
+#- return period
+cprobplot <- function (values, model, varname="x", alpha=.05, dist){
+  #extract model parameters
+  if (dist=="gumbel") {mu=model$results$par[1];sigma=model$results$par[2];xi=NA}
+  else if (dist=="frechet") {mu=coef(model)[1];sigma=coef(model)[2];xi=NA}
+  else if (dist=="gev") {
+    mu=model$results$par[1]
+    sigma=model$results$par[2]
+    xi=model$results$par[3]}
+  #probability plot positions
+  pp <- ProbPos(values=values, dist=dist)
+  #generate sequence of proportions
+  ps <- seq(0.001 ,.999, length.out=200)
+  #predict quantiles for generated proportions
+  predValue <- sapply(ps, predictQuantile, mu=mu, sigma=sigma, xi=xi, dist=dist)
+  #confidence intervals
+  if (dist=="gumbel") {
+    returnPeriod <- 1/(1-ps)
+    ciR <- ci(model, type="return.level", return.period=returnPeriod, alpha=alpha)
+    lcl <- ciR[,1]; ucl <- ciR[,3]}
+  else if (dist=="frechet") {
+    vcMS <- summary(model)$vcov
+    sq <- t(sapply(ps, frechetQp, vcov=vcMS, mu=mu, sigma=sigma, alpha=alpha))
+    lcl <- sq[,4]; ucl <- sq[,5]}
+  else if (dist=="gev") {
+    returnPeriod <- 1/(1-ps)
+    ciR <- ci(model, type="return.level", return.period=returnPeriod, alpha=alpha)
+    lcl <- ciR[,1]; ucl <- ciR[,3]}
+  #cumulative probability plot
+  oldPar <- par(no.readonly=TRUE)
+  par(mar=c(4,4,2,4))
+  plot(predValue, ps, type="l", col="blue", xlim=range(values),
+       ylim=range(ps), axes=FALSE, ann=FALSE)
+  title(main=dist, outer=TRUE, line=-1)
+  mtext("largest values", font=3)
+  points(pp$value, pp$meanRank, col="black")
+  lines(lcl, ps, lty=2, col="red")
+  lines(ucl, ps, lty=2, col="red")
+  axis(2, at=(seq(0,1, length.out=11)))
+  mtext("Cumulative probability", side=2, line=2.5)
+  axis(1, at=pretty(range(values)))
+  mtext(varname, side=1, line=2.5)
+  rpat <- c( 1-(1/100), 1-(1/20), 1-(1/10), 1-(1/5), 1-(1/4), 1-(1/3),
+             1-(1/2), 1-(2/3), 1-(4/5), 0)
+  rplab <- c(round(1/(1-rpat))[1], 1/(1-rpat)[2:length(rpat)])
+  axis(4, at=rpat, labels=rplab, las=1)
+  mtext("Return period", side=4, line=2.5)
+  box()
+  par(oldPar)
+}
+
+#function for constructing Q-Q plot
+QQplot <- function (values, mu, sigma, xi=NA, dist){
+  pp <- ProbPos(values=values, dist=dist)
+  Qpred <- predictQuantile(p=pp$meanRank, mu=mu, sigma=sigma, xi=xi, dist=dist)
+  plot(sort(values), Qpred, main="Q-Q plot", ylim=range(values),
+       xlab="Empirical quantile", ylab="Model quantile")
+  mtext(paste(dist, " (largest values)"), font=3)
+  abline(a=0, b=1, lty=2, col="blue")}
+
+#function for constructing P-P plot
+PPplot <- function (values, mu, sigma, xi=NA, dist){
+  pp <- ProbPos(values=values, dist=dist)
+  Ppred <- predictProbability(y=sort(values), mu=mu, sigma=sigma, xi=xi, dist=dist)
+  plot(pp$meanRank, Ppred, main="P-P plot", xlim=c(0,1), ylim=c(0,1),
+       xlab="Empirical probability", ylab="Model probability")
+  mtext(paste(dist, " (largest values)"), font=3)
+  abline(a=0, b=1, lty=2, col="blue")}
