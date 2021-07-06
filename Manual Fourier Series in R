@@ -1,0 +1,24 @@
+# Manual Fourier series and Inverse Fourier;
+
+x <- seq(-10*pi,10*pi,length.out=1000)
+# func <- x^2 - 1/2 * x
+func <- 2*tanh(x) - 1/4 * x
+plot(func,type='l')
+
+cosines <-rep(0,length(x))
+for (i in 0:(length(x)-1)){
+  cosines[i+1] <- sum(func * cos(2*pi/length(x) * i * x))
+}
+
+sines <-rep(0,length(x))
+for (i in 0:(length(x)-1)){
+  sines[i+1] <- sum(func * sin(2*pi/length(x) * i * x))
+}
+
+mat <- matrix(0,2*length(x),length(x))
+for(i in 1:length(cosines)){
+  mat[i,] <- cosines[i] * cos(2*pi/length(x) * i * x)
+  mat[i+length(cosines),] <- sines[i] * sin(2*pi/length(x) * i * x)
+}
+inv.joseph <- colSums(mat)
+plot(inv.joseph, type='l')
